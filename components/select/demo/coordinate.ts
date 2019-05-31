@@ -11,18 +11,25 @@ import { Component } from '@angular/core';
         <nz-option *ngFor="let c of cityData[selectedProvince]" [nzValue]="c" [nzLabel]="c"></nz-option>
       </nz-select>
     </div>
-  `
+  `,
+  styles: [
+    `
+      nz-select {
+        margin-right: 8px;
+      }
+    `
+  ]
 })
 export class NzDemoSelectCoordinateComponent {
   selectedProvince = 'Zhejiang';
   selectedCity = 'Hangzhou';
-  provinceData = [ 'Zhejiang', 'Jiangsu' ];
-  cityData = {
-    Zhejiang: [ 'Hangzhou', 'Ningbo', 'Wenzhou' ],
-    Jiangsu : [ 'Nanjing', 'Suzhou', 'Zhenjiang' ]
+  provinceData = ['Zhejiang', 'Jiangsu'];
+  cityData: { [place: string]: string[] } = {
+    Zhejiang: ['Hangzhou', 'Ningbo', 'Wenzhou'],
+    Jiangsu: ['Nanjing', 'Suzhou', 'Zhenjiang']
   };
 
   provinceChange(value: string): void {
-    this.selectedCity = this.cityData[ value ][ 0 ];
+    this.selectedCity = this.cityData[value][0];
   }
 }

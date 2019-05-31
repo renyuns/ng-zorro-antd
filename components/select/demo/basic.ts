@@ -12,8 +12,18 @@ import { Component } from '@angular/core';
       <nz-select style="width: 120px;" [ngModel]="'lucy'" nzDisabled>
         <nz-option nzValue="lucy" nzLabel="Lucy"></nz-option>
       </nz-select>
+      <nz-select style="width: 120px;" [ngModel]="'lucy'" nzLoading>
+        <nz-option nzValue="lucy" nzLabel="Lucy"></nz-option>
+      </nz-select>
     </div>
-  `
+  `,
+  styles: [
+    `
+      nz-select {
+        margin-right: 8px;
+      }
+    `
+  ]
 })
 export class NzDemoSelectBasicComponent {
   selectedValue = 'lucy';

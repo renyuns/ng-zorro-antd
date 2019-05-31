@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'nz-demo-dropdown-dropdown-button',
   template: `
     <div style="height: 28px;">
-      <nz-dropdown-button (nzClick)="log($event)">
+      <nz-dropdown-button (nzClick)="log()">
         DropDown
         <ul nz-menu>
           <li nz-menu-item>1st menu item</li>
@@ -33,7 +33,7 @@ import { Component } from '@angular/core';
         </ul>
       </nz-dropdown-button>
       <nz-dropdown>
-        <button nz-button nz-dropdown><span>Button</span> <i class="anticon anticon-down"></i></button>
+        <button nz-button nz-dropdown><span>Button</span> <i nz-icon type="down"></i></button>
         <ul nz-menu>
           <li nz-menu-item>
             <a>1st menu item</a>
@@ -48,10 +48,16 @@ import { Component } from '@angular/core';
       </nz-dropdown>
     </div>
   `,
-  styles  : []
+  styles: [
+    `
+      nz-dropdown-button {
+        margin-right: 8px;
+      }
+    `
+  ]
 })
 export class NzDemoDropdownDropdownButtonComponent {
-  log(e) {
+  log(): void {
     console.log('click dropdown button');
   }
 }

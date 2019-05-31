@@ -1,82 +1,46 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { NzFormatEmitEvent } from 'ng-zorro-antd';
 
 @Component({
-    selector: 'nz-demo-tree-line',
-    template: `
-        <nz-tree [nzTreeData]="nodes"
-                 [nzShowLine]="true"
-                 (nzExpandChange)="mouseAction('expand',$event)"
-                 (nzDblClick)="mouseAction('dblclick',$event)"
-                 (nzContextMenu)="mouseAction('contextmenu', $event)"
-                 (nzClick)="mouseAction('click',$event)">
-        </nz-tree>`
+  selector: 'nz-demo-tree-line',
+  template: `
+    <nz-tree [nzData]="nodes" nzShowLine (nzClick)="nzEvent($event)"> </nz-tree>
+  `
 })
-export class NzDemoTreeLineComponent {
-    nodes = [
+export class NzDemoTreeLineComponent implements OnInit {
+  nodes = [
+    {
+      title: 'parent 1',
+      key: '100',
+      expanded: true,
+      children: [
         {
-            title: 'root1',
-            key: '1001',
-            children: [
-                {
-                    title: 'child1',
-                    key: '10001',
-                    children: [
-                        {
-                            title: 'child1.1',
-                            key: '100011',
-                            children: []
-                        },
-                        {
-                            title: 'child1.2',
-                            key: '100012',
-                            children: [
-                                {
-                                    title: 'grandchild1.2.1',
-                                    key: '1000121',
-                                    isLeaf: true,
-                                    checked: true,
-                                    disabled: true
-                                },
-                                {
-                                    title: 'grandchild1.2.2',
-                                    key: '1000122',
-                                    isLeaf: true,
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    title: 'child2',
-                    key: '10002'
-                }
-            ]
+          title: 'parent 1-0',
+          key: '1001',
+          expanded: true,
+          children: [
+            { title: 'leaf', key: '10010', isLeaf: true },
+            { title: 'leaf', key: '10011', isLeaf: true },
+            { title: 'leaf', key: '10012', isLeaf: true }
+          ]
         },
         {
-            title: 'root2',
-            key: '1002',
-            children: [
-                {
-                    title: 'child2.1',
-                    key: '10021',
-                    children: []
-                },
-                {
-                    title: 'child2.2',
-                    key: '10022',
-                    children: [
-                        {
-                            title: 'grandchild2.2.1',
-                            key: '100221',
-                        }
-                    ]
-                }
-            ]
+          title: 'parent 1-1',
+          key: '1002',
+          children: [{ title: 'leaf', key: '10020', isLeaf: true }]
         },
-        {title: 'root3', key: '1003'}
-    ];
-
-    mouseAction(name: string, e: any): void {
-        console.log(name, e);
+        {
+          title: 'parent 1-2',
+          key: '1003',
+          children: [{ title: 'leaf', key: '10030', isLeaf: true }, { title: 'leaf', key: '10031', isLeaf: true }]
+        }
+      ]
     }
+  ];
+
+  nzEvent(event: NzFormatEmitEvent): void {
+    console.log(event);
+  }
+
+  ngOnInit(): void {}
 }

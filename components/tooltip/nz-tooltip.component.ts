@@ -1,53 +1,77 @@
+/**
+ * @license
+ * Copyright Alibaba.com All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
+ */
+
+import { AnimationEvent } from '@angular/animations';
 import {
-  AnimationEvent
-} from '@angular/animations';
-import {
-  ConnectedOverlayDirective,
+  CdkConnectedOverlay,
+  CdkOverlayOrigin,
   ConnectedOverlayPositionChange,
-  ConnectionPositionPair,
-  OverlayOrigin
+  ConnectionPositionPair
 } from '@angular/cdk/overlay';
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ContentChild,
   EventEmitter,
+  Host,
   Input,
+  OnChanges,
+  Optional,
   Output,
   TemplateRef,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-import { fadeAnimation } from '../core/animation/fade-animations';
-import { DEFAULT_4_POSITIONS, POSITION_MAP } from '../core/overlay/overlay-position-map';
-import { toBoolean } from '../core/util/convert';
+import {
+  getPlacementName,
+  isNotNil,
+  toBoolean,
+  zoomBigMotion,
+  DEFAULT_TOOLTIP_POSITIONS,
+  NzNoAnimationDirective,
+  POSITION_MAP
+} from 'ng-zorro-antd/core';
 
 @Component({
   selector: 'nz-tooltip',
-  preserveWhitespaces: false,
-  animations: [ fadeAnimation ],
+  exportAs: 'nzTooltipComponent',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  animations: [zoomBigMotion],
   templateUrl: './nz-tooltip.component.html',
-  styles: [ `
-    .ant-tooltip { position: relative; }
-  ` ]
+  preserveWhitespaces: false,
+  styles: [
+    `
+      .ant-tooltip {
+        position: relative;
+      }
+    `
+  ]
 })
-export class NzToolTipComponent {
+export class NzToolTipComponent implements OnChanges {
   _hasBackdrop = false;
-
-  @Input() nzTitle: string;
-  @Input() nzContent;
-
+  _prefix = 'ant-tooltip-placement';
+  _positions: ConnectionPositionPair[] = [...DEFAULT_TOOLTIP_POSITIONS];
+  _classMap = {};
+  _placement = 'top';
+  _trigger = 'hover';
+  overlayOrigin: CdkOverlayOrigin;
+  visibleSource = new BehaviorSubject<boolean>(false);
+  visible$: Observable<boolean> = this.visibleSource.asObservable();
+  @ViewChild('overlay') overlay: CdkConnectedOverlay;
+  @Input() @ContentChild('nzTemplate') nzTitle: string | TemplateRef<void> | null;
   @Input() nzOverlayClassName = '';
-  @Input() nzOverlayStyle = {};
-  @Input() nzMouseEnterDelay = 0.15; // Unit: second
-  @Input() nzMouseLeaveDelay = 0.1; // Unit: second
-  @Output() nzVisibleChange: EventEmitter<boolean> = new EventEmitter();
-  @ContentChild('nzTemplate') nzTemplate: TemplateRef<void>;
-  @ViewChild('overlay') overlay: ConnectedOverlayDirective;
-
-  overlayOrigin: OverlayOrigin;
+  @Input() nzOverlayStyle: { [key: string]: string } = {};
+  @Input() nzMouseEnterDelay = 0.15; // second
+  @Input() nzMouseLeaveDelay = 0.1; // second
 
   @Input()
   set nzVisible(value: boolean) {
@@ -62,9 +86,6 @@ export class NzToolTipComponent {
     return this.visibleSource.value;
   }
 
-  visibleSource = new BehaviorSubject<boolean>(false);
-  visible$: Observable<boolean> = this.visibleSource.asObservable();
-
   @Input()
   set nzTrigger(value: string) {
     this._trigger = value;
@@ -75,22 +96,28 @@ export class NzToolTipComponent {
     return this._trigger;
   }
 
-  _prefix = 'ant-tooltip-placement';
-  _positions: ConnectionPositionPair[] = [ ...DEFAULT_4_POSITIONS ];
-  _classMap = {};
-  _placement = 'top';
-  _trigger = 'hover';
-
   @Input()
   set nzPlacement(value: string) {
     if (value !== this._placement) {
       this._placement = value;
-      this._positions.unshift(POSITION_MAP[ this.nzPlacement ] as ConnectionPositionPair);
+      this._positions = [POSITION_MAP[this.nzPlacement], ...this._positions];
     }
   }
 
   get nzPlacement(): string {
     return this._placement;
+  }
+
+  @Output() readonly nzVisibleChange = new EventEmitter<boolean>();
+
+  [property: string]: any; // tslint:disable-line:no-any
+
+  constructor(public cdr: ChangeDetectorRef, @Host() @Optional() public noAnimation?: NzNoAnimationDirective) {}
+
+  ngOnChanges(): void {
+    Promise.resolve().then(() => {
+      this.updatePosition();
+    });
   }
 
   // Manually force updating current overlay's position
@@ -100,16 +127,10 @@ export class NzToolTipComponent {
     }
   }
 
-  onPositionChange($event: ConnectedOverlayPositionChange): void {
-    for (const key in POSITION_MAP) {
-      if (JSON.stringify($event.connectionPair) === JSON.stringify(POSITION_MAP[ key ])) {
-        this.nzPlacement = key;
-        break;
-      }
-    }
+  onPositionChange(position: ConnectedOverlayPositionChange): void {
+    this.nzPlacement = getPlacementName(position)!;
     this.setClassMap();
-    /** TODO may cause performance problem */
-    this._cdr.detectChanges();
+    this.cdr.detectChanges(); // TODO: performance?
   }
 
   show(): void {
@@ -133,20 +154,16 @@ export class NzToolTipComponent {
 
   setClassMap(): void {
     this._classMap = {
-      [ this.nzOverlayClassName ]             : true,
-      [ `${this._prefix}-${this._placement}` ]: true
+      [this.nzOverlayClassName]: true,
+      [`${this._prefix}-${this._placement}`]: true
     };
   }
 
-  setOverlayOrigin(origin: OverlayOrigin): void {
+  setOverlayOrigin(origin: CdkOverlayOrigin): void {
     this.overlayOrigin = origin;
   }
 
-  constructor(private _cdr: ChangeDetectorRef) {
-  }
-
-  private isContentEmpty(): boolean {
-    // return this.nzTemplate ? !(this.nzTemplate.elementRef.nativeElement as HTMLElement).hasChildNodes() : this.nzTitle === '';
-    return (this.nzTemplate || this.nzContent) ? false : (this.nzTitle === '' || this.nzTitle == null); // Pity, can't detect whether nzTemplate is empty due to can't get it's content before shown up
+  protected isContentEmpty(): boolean {
+    return this.nzTitle instanceof TemplateRef ? false : this.nzTitle === '' || !isNotNil(this.nzTitle);
   }
 }

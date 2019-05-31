@@ -26,18 +26,35 @@ When there is a need for autocomplete functionality.
 </nz-autocomplete>
 ```
 
+### Import this Component Individually
+
+You can get more detail [here](/docs/getting-started/en#import-a-component-individually).
+
+```ts
+import { NzAutocompleteModule } from 'ng-zorro-antd';
+```
+
 ### [nzAutocomplete]
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| nzAutocomplete | used to bind `nzAutocomplete` components | `NzAutocompleteComponent` | - |
+| `[nzAutocomplete]` | used to bind `nzAutocomplete` components | `NzAutocompleteComponent` | - |
 
 ### nz-autocomplete
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| nzBackfill | backfill selected item the input when using keyboard | `boolean` | `false` |
-| nzDataSource | Data source for autocomplete | `AutocompleteDataSource` | - |
-| nzDefaultActiveFirstOption | Whether active first option by default | `boolean` | `true` |
-| nzWidth | Custom width, unit px | `number` | trigger element width |
+| `[nzBackfill]` | backfill selected item the input when using keyboard | `boolean` | `false` |
+| `[nzDataSource]` | Data source for autocomplete | `AutocompleteDataSource` | - |
+| `[nzDefaultActiveFirstOption]` | Whether active first option by default | `boolean` | `true` |
+| `[nzWidth]` | Custom width, unit px | `number` | trigger element width |
+| `[nzOverlayClassName]` | Class name of the dropdown root element | `string` | - |
+| `[nzOverlayStyle]` | Style of the dropdown root element | `object` | - |
 
+### nz-auto-option
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `[nzValue]` | bind ngModel of the trigger element  | `any` | - |
+| `[nzLabel]` | display value of the trigger element  | `string` | - |
+| `[nzDisabled]` | disabled option | `boolean` | `false` |

@@ -13,12 +13,23 @@ title: BackTop
 
 ## API
 
+### Import this Component Individually
+
+You can get more detail [here](/docs/getting-started/en#import-a-component-individually).
+
+```ts
+import { NzBackTopModule } from 'ng-zorro-antd';
+```
+
+### nz-back-top
+
 > The distance to the bottom is set to `50px` by default, which is overridable.
 > If you decide to use custom styles, please note the size limit: no more than `40px * 40px`.
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| nzTemplate | custom content | ng-template | - |
-| nzVisibilityHeight | the `nz-back-top` button will not show until the scroll height reaches this value | number | `400` |
-| nzClick | a callback function, which can be executed when you click the button | EventEmitter | - |
-| nzTarget | specifies the scrollable area dom node | Element | `window` |
+| `[nzTemplate]` | custom content | `TemplateRef<void>` | - |
+| `[nzVisibilityHeight]` | the `nz-back-top` button will not show until the scroll height reaches this value | `number` | `400` |
+| `[nzTarget]` | specifies the scrollable area dom node | `string｜Element` | `window` |
+| `(nzClick)` | a callback function, which can be executed when you click the button | `EventEmitter<boolean>` | - |
+

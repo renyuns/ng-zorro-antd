@@ -1,7 +1,15 @@
+/**
+ * @license
+ * Copyright Alibaba.com All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
+ */
+
 // tslint:disable:no-any typedef no-invalid-this
 import { cancelRequestAnimationFrame, reqAnimFrame } from '../polyfill/request-animation';
 
-export default function throttleByAnimationFrame(fn: () => void) {
+export default function throttleByAnimationFrame(fn: any) {
   let requestId: number | null;
 
   const later = (args: any[]) => () => {
@@ -37,11 +45,11 @@ export function throttleByAnimationFrameDecorator() {
         Object.defineProperty(this, key, {
           value: boundFn,
           configurable: true,
-          writable: true,
+          writable: true
         });
         definingProperty = false;
         return boundFn;
-      },
+      }
     };
   };
 }

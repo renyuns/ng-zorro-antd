@@ -1,60 +1,40 @@
-import { Component, ContentChildren, Input, QueryList, TemplateRef } from '@angular/core';
+/**
+ * @license
+ * Copyright Alibaba.com All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
+ */
+
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChildren,
+  ElementRef,
+  Input,
+  QueryList,
+  Renderer2,
+  TemplateRef,
+  ViewEncapsulation
+} from '@angular/core';
 
 import { NzListItemMetaComponent } from './nz-list-item-meta.component';
 
 @Component({
-  selector           : 'nz-list-item',
-  template           : `
-    <ng-template #contentTpl>
-      <div *ngIf="isCon" class="ant-list-item-content" [ngClass]="{'ant-list-item-content-single': metas.length < 1}">
-        <ng-container *ngIf="conStr; else conTpl">{{ conStr }}</ng-container>
-      </div>
-    </ng-template>
-    <ng-template #actionsTpl>
-      <ul *ngIf="nzActions?.length > 0" class="ant-list-item-action">
-        <li *ngFor="let i of nzActions; let idx = index">
-          <ng-template [ngTemplateOutlet]="i"></ng-template>
-          <em *ngIf="idx!==nzActions.length-1" class="ant-list-item-action-split"></em>
-        </li>
-      </ul>
-    </ng-template>
-    <ng-template #mainTpl>
-      <ng-content></ng-content>
-      <ng-template [ngTemplateOutlet]="contentTpl"></ng-template>
-      <ng-template [ngTemplateOutlet]="actionsTpl"></ng-template>
-    </ng-template>
-    <div *ngIf="nzExtra; else mainTpl" class="ant-list-item-extra-wrap">
-      <div class="ant-list-item-main">
-        <ng-template [ngTemplateOutlet]="mainTpl"></ng-template>
-      </div>
-      <div class="ant-list-item-extra">
-        <ng-template [ngTemplateOutlet]="nzExtra"></ng-template>
-      </div>
-    </div>`,
+  selector: 'nz-list-item',
+  exportAs: 'nzListItem',
+  templateUrl: './nz-list-item.component.html',
   preserveWhitespaces: false,
-  host               : {
-    '[class.ant-list-item]': 'true'
-  }
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NzListItemComponent {
+  @ContentChildren(NzListItemMetaComponent) metas!: QueryList<NzListItemMetaComponent>;
   @Input() nzActions: Array<TemplateRef<void>> = [];
-  @ContentChildren(NzListItemMetaComponent) metas: QueryList<NzListItemMetaComponent>;
-
-  isCon = false;
-  conStr = '';
-  conTpl: TemplateRef<void>;
-
-  @Input()
-  set nzContent(value: string | TemplateRef<void>) {
-    if (value instanceof TemplateRef) {
-      this.conStr = null;
-      this.conTpl = value;
-    } else {
-      this.conStr = value;
-    }
-
-    this.isCon = !!value;
-  }
-
+  @Input() nzContent: string | TemplateRef<void>;
   @Input() nzExtra: TemplateRef<void>;
+
+  constructor(public elementRef: ElementRef, private renderer: Renderer2) {
+    this.renderer.addClass(this.elementRef.nativeElement, 'ant-list-item');
+  }
 }

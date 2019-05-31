@@ -1,7 +1,7 @@
 ---
 category: Components
 subtitle: 气泡卡片
-type: Data Display
+type: 数据展示
 title: Popover
 ---
 
@@ -15,13 +15,23 @@ title: Popover
 
 ## API
 
+### 单独引入此组件
+
+想要了解更多关于单独引入组件的内容，可以在[快速上手](/docs/getting-started/zh#单独引入某个组件)页面进行查看。
+
+```ts
+import { NzPopoverModule } from 'ng-zorro-antd';
+```
+
+### [nz-popover]
+
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| nzTitle | 卡片标题 | string 丨`TemplateRef<void>` | 无 |
-| nzTemplate | 用于定义Content内容（不会覆盖nzTitle） | `TemplateRef<void>` | 无 |
+| `[nzTitle]` | 卡片标题 | `string｜TemplateRef<void>` | - |
+| `[nzContent]` | 用于定义Content内容 | `string｜TemplateRef<void>` | - |
 
 更多属性请参考 [Tooltip](/components/tooltip/zh#api)。
 
 ## 注意
 
-请确保 `Popover` 的子元素能接受 `onMouseEnter`、`onMouseLeave`、`onFocus`、`onClick` 事件。
+请确保 `nz-popover` 的子元素能接受 `onMouseEnter`、`onMouseLeave`、`onFocus`、`onClick` 事件。

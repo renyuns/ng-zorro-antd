@@ -14,13 +14,23 @@ Comparing with `Tooltip`, besides information `Popover` card can also provide ac
 
 ## API
 
+### Import this Component Individually
+
+You can get more detail [here](/docs/getting-started/en#import-a-component-individually).
+
+```ts
+import { NzPopoverModule } from 'ng-zorro-antd';
+```
+
+### [nz-popover]
+
 | Param | Description | Type | Default value |
 | ----- | ----------- | ---- | ------------- |
-| nzTitle | Title of the card | string 丨`TemplateRef<void>` | - |
-| nzTemplate | Used to define the content (will not override the nzTitle) | `TemplateRef<void>` | - |
+| nzTitle | Title of the card | `string｜TemplateRef<void>` | - |
+| nzTemplate | Used to define the content | `string｜TemplateRef<void>` | - |
 
 Consult [Tooltip's documentation](/components/tooltip/en#api) to find more APIs.
 
 ## Note
 
-Please ensure that the child node of `Popover` accepts `onMouseEnter`, `onMouseLeave`, `onFocus`, `onClick` events.
+Please ensure that the child node of `nz-popover` accepts `onMouseEnter`, `onMouseLeave`, `onFocus`, `onClick` events.

@@ -1,10 +1,19 @@
+/**
+ * @license
+ * Copyright Alibaba.com All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
+ */
+
 export interface TransferItem {
   title: string;
   direction?: 'left' | 'right';
   disabled?: boolean;
   checked?: boolean;
   _hiden?: boolean;
-  [key: string]: {};
+  // tslint:disable-next-line:no-any
+  [key: string]: any;
 }
 
 export interface TransferCanMove {
@@ -27,5 +36,5 @@ export interface TransferSelectChange {
   direction: string;
   checked: boolean;
   list: TransferItem[];
-  item: TransferItem;
+  item?: TransferItem;
 }
