@@ -1,6 +1,6 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, DebugElement, NO_ERRORS_SCHEMA, ViewChild } from '@angular/core';
-import { async, fakeAsync, inject, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -47,9 +47,7 @@ describe('time-picker', () => {
       fixture.detectChanges();
       testComponent.autoFocus = true;
       fixture.detectChanges();
-      expect(timeElement.nativeElement.querySelector('input').attributes.getNamedItem('autofocus').name).toBe(
-        'autofocus'
-      );
+      expect(timeElement.nativeElement.querySelector('input').attributes.getNamedItem('autofocus').name).toBe('autofocus');
       testComponent.autoFocus = false;
       fixture.detectChanges();
       expect(timeElement.nativeElement.querySelector('input').attributes.getNamedItem('autofocus')).toBe(null);
@@ -70,6 +68,7 @@ describe('time-picker', () => {
       testComponent.disabled = true;
       fixture.detectChanges();
       expect(timeElement.nativeElement.querySelector('input').attributes.getNamedItem('disabled')).toBeDefined();
+      testComponent.disabled = false;
       testComponent.nzTimePickerComponent.setDisabledState(false);
       fixture.detectChanges();
       expect(timeElement.nativeElement.querySelector('input').attributes.getNamedItem('disabled')).toBeNull();
@@ -106,7 +105,6 @@ describe('time-picker', () => {
 });
 
 @Component({
-  selector: 'nz-test-time-picker',
   template: `
     <nz-time-picker
       [nzAutoFocus]="autoFocus"
@@ -125,5 +123,5 @@ export class NzTestTimePickerComponent {
   date = new Date();
   disabled = false;
   use12Hours = false;
-  @ViewChild(NzTimePickerComponent) nzTimePickerComponent: NzTimePickerComponent;
+  @ViewChild(NzTimePickerComponent, { static: false }) nzTimePickerComponent: NzTimePickerComponent;
 }

@@ -1,5 +1,5 @@
-// tslint:disable:no-any
 import { Component, OnInit } from '@angular/core';
+import { NzCascaderOption } from 'ng-zorro-antd/cascader';
 
 const options = [
   {
@@ -84,8 +84,7 @@ const otherOptions = [
 @Component({
   selector: 'nz-demo-cascader-search',
   template: `
-    <nz-cascader [nzOptions]="nzOptions" [(ngModel)]="values" [nzShowSearch]="true" (ngModelChange)="onChanges($event)">
-    </nz-cascader>
+    <nz-cascader [nzOptions]="nzOptions" [(ngModel)]="values" [nzShowSearch]="true" (ngModelChange)="onChanges($event)"> </nz-cascader>
     &nbsp;
     <a href="javascript:;" (click)="changeNzOptions()" class="change-options">
       Change Options
@@ -105,8 +104,8 @@ const otherOptions = [
   ]
 })
 export class NzDemoCascaderSearchComponent implements OnInit {
-  nzOptions: any = null;
-  values: any[] | null = null;
+  nzOptions: NzCascaderOption[] | null = null;
+  values: string[] | null = null;
 
   ngOnInit(): void {
     setTimeout(() => {
@@ -122,7 +121,7 @@ export class NzDemoCascaderSearchComponent implements OnInit {
     }
   }
 
-  onChanges(values: any): void {
+  onChanges(values: string[]): void {
     console.log(values, this.values);
   }
 }

@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 
+interface ItemData {
+  id: number;
+  name: string;
+  age: number;
+  address: string;
+}
+
 @Component({
   selector: 'nz-demo-table-row-selection-custom',
   template: `
-    <nz-table
-      #rowSelectionTable
-      nzShowSizeChanger
-      [nzData]="listOfAllData"
-      (nzCurrentPageDataChange)="currentPageDataChange($event)"
-    >
+    <nz-table #rowSelectionTable nzShowSizeChanger [nzData]="listOfAllData" (nzCurrentPageDataChange)="currentPageDataChange($event)">
       <thead>
         <tr>
           <th
@@ -60,19 +62,18 @@ export class NzDemoTableRowSelectionCustomComponent implements OnInit {
   ];
   isAllDisplayDataChecked = false;
   isIndeterminate = false;
-  listOfDisplayData: any[] = [];
-  listOfAllData: any[] = [];
+  listOfDisplayData: ItemData[] = [];
+  listOfAllData: ItemData[] = [];
   mapOfCheckedId: { [key: string]: boolean } = {};
 
-  currentPageDataChange($event: Array<{ id: number; name: string; age: number; address: string }>): void {
+  currentPageDataChange($event: ItemData[]): void {
     this.listOfDisplayData = $event;
     this.refreshStatus();
   }
 
   refreshStatus(): void {
     this.isAllDisplayDataChecked = this.listOfDisplayData.every(item => this.mapOfCheckedId[item.id]);
-    this.isIndeterminate =
-      this.listOfDisplayData.some(item => this.mapOfCheckedId[item.id]) && !this.isAllDisplayDataChecked;
+    this.isIndeterminate = this.listOfDisplayData.some(item => this.mapOfCheckedId[item.id]) && !this.isAllDisplayDataChecked;
   }
 
   checkAll(value: boolean): void {

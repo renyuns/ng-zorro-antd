@@ -1,6 +1,6 @@
 import { Component, DebugElement, ViewChild } from '@angular/core';
-import { fakeAsync, flush, tick, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { dispatchEvent, dispatchFakeEvent } from 'ng-zorro-antd/core';
@@ -381,9 +381,11 @@ describe('input number', () => {
     it('should update value immediately after formatter changed', () => {
       const newFormatter = (v: number) => `${v} %`;
       const initValue = 1;
-      testComponent.nzInputNumberComponent.onModelChange(`${initValue}`);
+      const component = testComponent.nzInputNumberComponent;
+      component.onModelChange(`${initValue}`);
       fixture.detectChanges();
-      testComponent.formatter = newFormatter;
+      component.nzFormatter = newFormatter;
+      component.setValue(component.getCurrentValidValue(component.actualValue), true);
       fixture.detectChanges();
       expect(inputElement.value).toBe(newFormatter(initValue));
     });
@@ -446,7 +448,6 @@ describe('input number', () => {
 });
 
 @Component({
-  selector: 'nz-test-input-number-basic',
   template: `
     <nz-input-number
       [(ngModel)]="value"
@@ -466,7 +467,7 @@ describe('input number', () => {
   `
 })
 export class NzTestInputNumberBasicComponent {
-  @ViewChild(NzInputNumberComponent) nzInputNumberComponent: NzInputNumberComponent;
+  @ViewChild(NzInputNumberComponent, { static: false }) nzInputNumberComponent: NzInputNumberComponent;
   value?: number | string;
   autofocus = false;
   disabled = false;
@@ -482,7 +483,6 @@ export class NzTestInputNumberBasicComponent {
 }
 
 @Component({
-  selector: 'nz-test-input-number-form',
   template: `
     <form [formGroup]="formGroup">
       <nz-input-number formControlName="inputNumber" nzMax="10" nzMin="-10"></nz-input-number>

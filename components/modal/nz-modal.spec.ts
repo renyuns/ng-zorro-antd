@@ -3,18 +3,18 @@
 import { ESCAPE } from '@angular/cdk/keycodes';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, ElementRef, EventEmitter, Input } from '@angular/core';
-import { async, fakeAsync, flush, inject, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, inject, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NzButtonComponent, NzButtonModule } from 'ng-zorro-antd/button';
-import { dispatchFakeEvent, dispatchKeyboardEvent, NzMeasureScrollbarService } from 'ng-zorro-antd/core';
+import { dispatchFakeEvent, dispatchKeyboardEvent } from 'ng-zorro-antd/core';
+import { NzToCssUnitPipe } from 'ng-zorro-antd/core/pipe/nz-css-unit.pipe';
 import { NzI18nService } from 'ng-zorro-antd/i18n';
 import { NzIconTestModule } from 'ng-zorro-antd/icon/testing';
 import en_US from '../i18n/languages/en_US';
 
-import { CssUnitPipe } from './css-unit.pipe';
 import { NZ_MODAL_CONFIG } from './nz-modal-config';
 import { NzModalControlService } from './nz-modal-control.service';
 import { NzModalRef } from './nz-modal-ref.class';
@@ -23,7 +23,6 @@ import { NzModalModule } from './nz-modal.module';
 import { NzModalService } from './nz-modal.service';
 
 let counter = 0;
-
 describe('modal testing (legacy)', () => {
   describe('demo-async', () => {
     let fixture: ComponentFixture<NzDemoModalAsyncComponent>;
@@ -33,8 +32,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule, NzButtonModule, NzModalModule],
-        declarations: [NzDemoModalAsyncComponent],
-        providers: [NzMeasureScrollbarService]
+        declarations: [NzDemoModalAsyncComponent]
       }).compileComponents();
     }));
 
@@ -73,8 +71,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule, NzButtonModule, NzModalModule],
-        declarations: [NzDemoModalConfirmPromiseComponent],
-        providers: [NzMeasureScrollbarService]
+        declarations: [NzDemoModalConfirmPromiseComponent]
       }).compileComponents();
     }));
 
@@ -123,8 +120,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule, NzModalModule, NzIconTestModule],
-        declarations: [TestBasicServiceComponent],
-        providers: [NzMeasureScrollbarService]
+        declarations: [TestBasicServiceComponent]
       }).compileComponents();
     }));
 
@@ -139,28 +135,24 @@ describe('modal testing (legacy)', () => {
     });
 
     it('should correctly render all basic props', fakeAsync(() => {
-      spyOn(console, 'log');
+      const spy = spyOn(console, 'log');
 
       // [Hack] Codes that can't be covered by normal operations
       // @ts-ignore
       expect(modalInstance.changeVisibleFromInside(true) instanceof Promise).toBe(true);
 
       expect((modalElement.querySelector('.ant-modal-wrap') as HTMLElement).style.zIndex).toBe('1888');
-      expect(
-        (modalElement.querySelector('.ant-modal-wrap') as HTMLElement).classList.contains('test-wrap-class-name')
-      ).toBe(true);
+      expect((modalElement.querySelector('.ant-modal-wrap') as HTMLElement).classList.contains('test-wrap-class-name')).toBe(true);
       expect((modalElement.querySelector('.ant-modal') as HTMLElement).style.width).toBe('250px');
-      expect((modalElement.querySelector('.ant-modal') as HTMLElement).classList.contains('test-class-name')).toBe(
-        true
-      );
+      expect((modalElement.querySelector('.ant-modal') as HTMLElement).classList.contains('test-class-name')).toBe(true);
       expect((modalElement.querySelector('.ant-modal') as HTMLElement).style.top).toBe('20pt');
-      expect(
-        (modalElement.querySelector('.ant-modal-title') as HTMLElement).innerHTML.indexOf('<b>TEST BOLD TITLE</b>')
-      ).toBeGreaterThan(-1);
+      expect((modalElement.querySelector('.ant-modal-title') as HTMLElement).innerHTML.indexOf('<b>TEST BOLD TITLE</b>')).toBeGreaterThan(
+        -1
+      );
       // expect((modalElement.querySelector('.ant-modal-footer') as HTMLElement).innerHTML.indexOf('<div>custom html footer: <i>OK</i></div>')).toBeGreaterThan(-1);
-      expect(
-        (modalElement.querySelector('.ant-modal-body') as HTMLElement).innerHTML.indexOf('<p>test html content</p>')
-      ).toBeGreaterThan(-1);
+      expect((modalElement.querySelector('.ant-modal-body') as HTMLElement).innerHTML.indexOf('<p>test html content</p>')).toBeGreaterThan(
+        -1
+      );
       expect((modalElement.querySelector('.ant-modal-body') as HTMLElement).style.background).toBe('gray');
       expect(getButtonOk(modalElement).innerHTML.indexOf('custom ok')).toBeGreaterThan(-1);
       expect(getButtonOk(modalElement).classList.contains('ant-btn-success')).toBe(true);
@@ -177,10 +169,11 @@ describe('modal testing (legacy)', () => {
       flush();
       expect(console.log).toHaveBeenCalledWith('click ok');
       expectModalDestroyed(tempModalId, false); // shouldn't destroy when ok button returns false
+      spy.calls.reset();
     })); // /basic props
 
     it('should be closed when clicking cancel button', fakeAsync(() => {
-      spyOn(console, 'log');
+      const spy = spyOn(console, 'log');
       // change and click mask
       modalInstance.nzMask = true;
       // should show mask
@@ -200,6 +193,7 @@ describe('modal testing (legacy)', () => {
       flush();
       fixture.detectChanges();
       expectModalDestroyed(tempModalId, true); // should be destroyed
+      spy.calls.reset();
     }));
 
     it('should be closed when clicking ESC', fakeAsync(() => {
@@ -226,8 +220,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule, NzModalModule],
-        declarations: [TestVaryServiceComponent, TestVaryServiceCustomComponent],
-        providers: [NzMeasureScrollbarService]
+        declarations: [TestVaryServiceComponent, TestVaryServiceCustomComponent]
       });
       TestBed.overrideModule(BrowserDynamicTestingModule, {
         set: { entryComponents: [TestVaryServiceCustomComponent] }
@@ -278,8 +271,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule, NzModalModule],
-        declarations: [TestConfirmModalComponent, TestConfirmCustomComponent],
-        providers: [NzMeasureScrollbarService]
+        declarations: [TestConfirmModalComponent, TestConfirmCustomComponent]
       }).compileComponents();
 
       TestBed.overrideModule(BrowserDynamicTestingModule, {
@@ -292,24 +284,34 @@ describe('modal testing (legacy)', () => {
       instance = fixture.debugElement.componentInstance;
     });
 
+    it('should click mask is closable', fakeAsync(() => {
+      const modalRef = instance.createMaskClosableConfirm();
+      const modalElement = modalRef.getElement();
+      fixture.detectChanges();
+      expect(modalRef.getInstance().nzMaskClosable).toBe(true);
+      const maskElement = modalElement.querySelector('.ant-modal-wrap') as HTMLDivElement;
+      maskElement!.click();
+      flush();
+      fixture.detectChanges();
+      expect(instance.maskClosedSpy).toHaveBeenCalled();
+    }));
+
     it('boundary detection for options', fakeAsync(() => {
-      // @ts-ignore
-      const logger = instance.modalService.logger;
-      spyOn(logger, 'warn');
+      const spy = spyOn(console, 'warn');
 
       const tempModalId = generateUniqueId();
       const modalAgent = instance.createConfirm() as NzModalRef;
       const modalElement = modalAgent.getElement();
       modalElement.classList.add(tempModalId);
       fixture.detectChanges();
-      // nzFooter
-      expect(logger.warn).toHaveBeenCalled();
+      expect(console.warn).toHaveBeenCalled();
       // nzOnOk: close modal when clicked
       getButtonOk(modalElement).click();
       fixture.detectChanges();
       flush();
       fixture.detectChanges();
       expectModalDestroyed(tempModalId, true);
+      spy.calls.reset();
     }));
 
     it('should render other confirm modals', fakeAsync(() => {
@@ -318,6 +320,15 @@ describe('modal testing (legacy)', () => {
       flush();
       fixture.detectChanges();
       ids.forEach(id => expectModalDestroyed(id, false));
+    }));
+
+    it('should disable buttons', fakeAsync(() => {
+      const modalRef = instance.createDisabledModal();
+      fixture.detectChanges();
+      flush();
+      fixture.detectChanges();
+      const buttons = modalRef.getElement().querySelectorAll('.ant-modal-confirm-btns button') as NodeListOf<HTMLButtonElement>;
+      buttons.forEach(button => expect(button.disabled).toBe(true));
     }));
 
     it('should render content with component', fakeAsync(() => {
@@ -339,7 +350,7 @@ describe('modal testing (legacy)', () => {
     beforeEach(async(() => {
       TestBed.configureTestingModule({
         imports: [NoopAnimationsModule],
-        declarations: [CssUnitPipe, TestCssUnitPipeComponent]
+        declarations: [NzToCssUnitPipe, TestCssUnitPipeComponent]
       }).compileComponents();
     }));
 
@@ -366,8 +377,7 @@ describe('modal testing (legacy)', () => {
 
     const injector = TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, NzButtonModule, NzModalModule],
-      declarations: [NzDemoModalAsyncComponent],
-      providers: [NzMeasureScrollbarService]
+      declarations: [NzDemoModalAsyncComponent]
     });
     fixture = TestBed.createComponent(NzDemoModalAsyncComponent);
     const comp = fixture.componentInstance as NzDemoModalAsyncComponent;
@@ -375,11 +385,9 @@ describe('modal testing (legacy)', () => {
     fixture.detectChanges();
     injector.get(NzI18nService).setLocale(en_US);
     fixture.detectChanges();
-    const cancelText = (fixture.debugElement.query(By.css('nz-modal .ant-btn'))
-      .nativeElement as HTMLElement).textContent!.trim();
+    const cancelText = (fixture.debugElement.query(By.css('nz-modal .ant-btn')).nativeElement as HTMLElement).textContent!.trim();
     expect(cancelText).toBe(en_US.Modal.cancelText);
-    const okText = (fixture.debugElement.query(By.css('nz-modal .ant-btn-primary'))
-      .nativeElement as HTMLElement).textContent!.trim();
+    const okText = (fixture.debugElement.query(By.css('nz-modal .ant-btn-primary')).nativeElement as HTMLElement).textContent!.trim();
     expect(okText).toBe(en_US.Modal.okText);
   });
 });
@@ -427,7 +435,6 @@ describe('global config', () => {
     inputFixture.detectChanges();
     nativeElement!.click();
     inputFixture.detectChanges();
-    console.log(inputFixture.debugElement.nativeElement);
     expectModalHidden(inputFixture.debugElement.query(By.css('nz-modal')).nativeElement, true);
   }));
 });
@@ -439,8 +446,7 @@ describe('NzModal', () => {
 
   beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, NzModalModule],
-      providers: [NzMeasureScrollbarService],
+      imports: [NoopAnimationsModule, NzModalModule, NzIconTestModule],
       declarations: [NzDemoModalBasicComponent, NzDemoModalMaskComponent, ModalByServiceComponent]
     });
 
@@ -473,6 +479,17 @@ describe('NzModal', () => {
       tick(1000);
       fixture.detectChanges();
       expect(overlayContainerElement.textContent).not.toContain('BASIC_MODAL_TITLE');
+    }));
+
+    it('should custom close icon work', fakeAsync(() => {
+      fixture.componentInstance.modalAvailable = true;
+      fixture.componentInstance.icon = 'close-square';
+      fixture.detectChanges();
+      tick(1000);
+      fixture.detectChanges();
+      const closeIcon = overlayContainerElement.querySelector('.ant-modal-close-icon') as HTMLElement;
+      expect(closeIcon).toBeTruthy();
+      expect(closeIcon.classList).toContain('anticon-close-square');
     }));
   });
 
@@ -558,8 +575,7 @@ describe('NzModal', () => {
       const spy = jasmine.createSpy('afterAllClose spy');
       const modalMethods = ['create', 'info', 'success', 'error', 'confirm'];
       const uniqueId = (name: string) => `__${name}_ID_SUFFIX__`;
-      const queryOverlayElement = (name: string) =>
-        overlayContainerElement.querySelector(`.${uniqueId(name)}`) as HTMLElement;
+      const queryOverlayElement = (name: string) => overlayContainerElement.querySelector(`.${uniqueId(name)}`) as HTMLElement;
 
       modalService.afterAllClose.subscribe(spy);
 
@@ -569,9 +585,7 @@ describe('NzModal', () => {
 
       fixture.detectChanges();
       tick(600);
-      modalMethods
-        .concat('NON_SERVICE')
-        .forEach(method => expect(queryOverlayElement(method).style.display).not.toBe('none')); // Cover non-service modal for later checking
+      modalMethods.concat('NON_SERVICE').forEach(method => expect(queryOverlayElement(method).style.display).not.toBe('none')); // Cover non-service modal for later checking
       expect(modalService.openModals.length).toBe(6);
 
       modalService.closeAll();
@@ -586,9 +600,7 @@ describe('NzModal', () => {
       const modalMethods = ['info', 'success', 'error', 'warning'];
       const uniqueId = (name: string) => `__${name}_ID_SUFFIX__`;
       const queryOverlayElement = (name: string) =>
-        overlayContainerElement.querySelectorAll(`.${uniqueId(name)} .ant-modal-confirm-btns > button`) as NodeListOf<
-          HTMLButtonElement
-        >;
+        overlayContainerElement.querySelectorAll(`.${uniqueId(name)} .ant-modal-confirm-btns > button`) as NodeListOf<HTMLButtonElement>;
 
       fixture.componentInstance.nonServiceModalVisible = false; // Show non-service modal
       // @ts-ignore
@@ -718,13 +730,14 @@ describe('NzModal', () => {
 
 @Component({
   template: `
-    <nz-modal *ngIf="modalAvailable" nzVisible nzTitle="BASIC_MODAL_TITLE">
+    <nz-modal *ngIf="modalAvailable" nzVisible nzTitle="BASIC_MODAL_TITLE" [nzCloseIcon]="icon">
       <p>content</p>
     </nz-modal>
   `
 })
 class NzDemoModalBasicComponent {
   modalAvailable = true;
+  icon = 'close';
 }
 
 @Component({
@@ -754,22 +767,14 @@ class NzDemoModalWithInputComponent {
 }
 
 @Component({
-  selector: 'nz-demo-modal-async',
   template: `
     <button nz-button nzType="primary" (click)="showModal()">
       <span>show modal</span>
     </button>
-    <nz-modal
-      [(nzVisible)]="isVisible"
-      nzTitle="title"
-      (nzOnCancel)="handleCancel()"
-      (nzOnOk)="handleOk()"
-      [nzOkLoading]="isOkLoading"
-    >
+    <nz-modal [(nzVisible)]="isVisible" nzTitle="title" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzOkLoading]="isOkLoading">
       <p>content</p>
     </nz-modal>
-  `,
-  styles: []
+  `
 })
 class NzDemoModalAsyncComponent {
   isVisible = false;
@@ -793,11 +798,9 @@ class NzDemoModalAsyncComponent {
 }
 
 @Component({
-  selector: 'nz-demo-modal-confirm-promise',
   template: `
     <button nz-button nzType="info" (click)="showConfirm()">Confirm</button>
-  `,
-  styles: []
+  `
 })
 class NzDemoModalConfirmPromiseComponent {
   confirmModal: NzModalRef; // For testing by now
@@ -909,6 +912,7 @@ export class TestVaryServiceCustomComponent {
   template: ``
 })
 export class TestConfirmModalComponent {
+  maskClosedSpy = jasmine.createSpy();
   constructor(public modalService: NzModalService) {}
 
   createConfirm(): NzModalRef {
@@ -919,6 +923,15 @@ export class TestConfirmModalComponent {
     return this.modalService.confirm({
       nzFooter: 'should warning',
       nzOkText: 'close'
+    });
+  }
+
+  createMaskClosableConfirm(): NzModalRef {
+    return this.modalService.confirm({
+      nzMaskClosable: true,
+      nzOnCancel: () => {
+        this.maskClosedSpy();
+      }
     });
   }
 
@@ -938,6 +951,13 @@ export class TestConfirmModalComponent {
       nzContent: TestConfirmCustomComponent
     });
   }
+
+  createDisabledModal(): NzModalRef {
+    return this.modalService.confirm({
+      nzCancelDisabled: true,
+      nzOkDisabled: true
+    });
+  }
 }
 
 @Component({
@@ -953,13 +973,12 @@ export class TestConfirmCustomComponent {
 
 @Component({
   template: `
-    <div [style.width]="100 | toCssUnit" [style.height]="'100px' | toCssUnit" [style.top]="100 | toCssUnit: 'pt'"></div>
+    <div [style.width]="100 | nzToCssUnit" [style.height]="'100px' | nzToCssUnit" [style.top]="100 | nzToCssUnit: 'pt'"></div>
   `
 })
 class TestCssUnitPipeComponent {}
 
 @Component({
-  selector: 'nz-modal-by-service',
   template: `
     <nz-modal [(nzVisible)]="nonServiceModalVisible" nzWrapClassName="__NON_SERVICE_ID_SUFFIX__"></nz-modal>
   `,

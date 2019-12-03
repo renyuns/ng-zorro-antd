@@ -5,6 +5,7 @@ interface Data {
   age: number;
   address: string;
 
+  // tslint:disable-next-line:no-any
   [key: string]: any;
 }
 
@@ -66,8 +67,14 @@ interface Data {
 export class NzDemoTableResetFilterComponent {
   listOfSearchName: string[] = [];
   listOfSearchAddress: string[] = [];
-  listOfFilterName = [{ text: 'Joe', value: 'Joe' }, { text: 'Jim', value: 'Jim' }];
-  listOfFilterAddress = [{ text: 'London', value: 'London' }, { text: 'Sidney', value: 'Sidney' }];
+  listOfFilterName = [
+    { text: 'Joe', value: 'Joe' },
+    { text: 'Jim', value: 'Jim' }
+  ];
+  listOfFilterAddress = [
+    { text: 'London', value: 'London' },
+    { text: 'Sidney', value: 'Sidney' }
+  ];
   listOfData: Data[] = [
     {
       name: 'John Brown',
@@ -91,7 +98,7 @@ export class NzDemoTableResetFilterComponent {
     }
   ];
   listOfDisplayData = [...this.listOfData];
-  mapOfSort: { [key: string]: any } = {
+  mapOfSort: { [key: string]: string | null } = {
     name: null,
     age: null,
     address: null
@@ -112,20 +119,12 @@ export class NzDemoTableResetFilterComponent {
     this.listOfSearchName = listOfSearchName;
     this.listOfSearchAddress = listOfSearchAddress;
     const filterFunc = (item: Data) =>
-      (this.listOfSearchAddress.length
-        ? this.listOfSearchAddress.some(address => item.address.indexOf(address) !== -1)
-        : true) &&
+      (this.listOfSearchAddress.length ? this.listOfSearchAddress.some(address => item.address.indexOf(address) !== -1) : true) &&
       (this.listOfSearchName.length ? this.listOfSearchName.some(name => item.name.indexOf(name) !== -1) : true);
     const listOfData = this.listOfData.filter((item: Data) => filterFunc(item));
     if (this.sortName && this.sortValue) {
       this.listOfDisplayData = listOfData.sort((a, b) =>
-        this.sortValue === 'ascend'
-          ? a[this.sortName!] > b[this.sortName!]
-            ? 1
-            : -1
-          : b[this.sortName!] > a[this.sortName!]
-          ? 1
-          : -1
+        this.sortValue === 'ascend' ? (a[this.sortName!] > b[this.sortName!] ? 1 : -1) : b[this.sortName!] > a[this.sortName!] ? 1 : -1
       );
     } else {
       this.listOfDisplayData = listOfData;
@@ -133,8 +132,14 @@ export class NzDemoTableResetFilterComponent {
   }
 
   resetFilters(): void {
-    this.listOfFilterName = [{ text: 'Joe', value: 'Joe' }, { text: 'Jim', value: 'Jim' }];
-    this.listOfFilterAddress = [{ text: 'London', value: 'London' }, { text: 'Sidney', value: 'Sidney' }];
+    this.listOfFilterName = [
+      { text: 'Joe', value: 'Joe' },
+      { text: 'Jim', value: 'Jim' }
+    ];
+    this.listOfFilterAddress = [
+      { text: 'London', value: 'London' },
+      { text: 'Sidney', value: 'Sidney' }
+    ];
     this.listOfSearchName = [];
     this.listOfSearchAddress = [];
     this.search(this.listOfSearchName, this.listOfSearchAddress);

@@ -50,9 +50,7 @@ describe('input-group', () => {
         expect(inputGroupElement.firstElementChild!.classList).toContain('ant-input-group');
         expect(inputGroupElement.firstElementChild!.children.length).toBe(2);
         expect(inputGroupElement.firstElementChild!.lastElementChild!.classList).toContain('ant-input');
-        expect((inputGroupElement.firstElementChild!.firstElementChild as HTMLElement).innerText).toBe(
-          'beforeTemplate'
-        );
+        expect((inputGroupElement.firstElementChild!.firstElementChild as HTMLElement).innerText).toBe('beforeTemplate');
       });
       it('should after content string work', () => {
         testComponent.afterContent = 'after';
@@ -222,7 +220,6 @@ describe('input-group', () => {
 });
 
 @Component({
-  selector: 'nz-test-input-group-addon',
   template: `
     <nz-input-group [nzAddOnBefore]="beforeContent" [nzAddOnAfter]="afterContent" [nzSize]="size">
       <input type="text" nz-input />
@@ -232,15 +229,14 @@ describe('input-group', () => {
   `
 })
 export class NzTestInputGroupAddonComponent {
-  @ViewChild('beforeTemplate') beforeTemplate: TemplateRef<void>;
-  @ViewChild('afterTemplate') afterTemplate: TemplateRef<void>;
+  @ViewChild('beforeTemplate', { static: false }) beforeTemplate: TemplateRef<void>;
+  @ViewChild('afterTemplate', { static: false }) afterTemplate: TemplateRef<void>;
   beforeContent: string | TemplateRef<void>;
   afterContent: string | TemplateRef<void>;
   size = 'default';
 }
 
 @Component({
-  selector: 'nz-test-input-group-affix',
   template: `
     <nz-input-group [nzPrefix]="beforeContent" [nzSuffix]="afterContent" [nzSize]="size">
       <input type="text" nz-input />
@@ -250,15 +246,14 @@ export class NzTestInputGroupAddonComponent {
   `
 })
 export class NzTestInputGroupAffixComponent {
-  @ViewChild('beforeTemplate') beforeTemplate: TemplateRef<void>;
-  @ViewChild('afterTemplate') afterTemplate: TemplateRef<void>;
+  @ViewChild('beforeTemplate', { static: false }) beforeTemplate: TemplateRef<void>;
+  @ViewChild('afterTemplate', { static: false }) afterTemplate: TemplateRef<void>;
   beforeContent: string | TemplateRef<void>;
   afterContent: string | TemplateRef<void>;
   size = 'default';
 }
 
 @Component({
-  selector: 'nz-test-input-group-multiple',
   template: `
     <nz-input-group [nzCompact]="compact" [nzSearch]="search" [nzSize]="size">
       <input type="text" nz-input />
@@ -274,9 +269,8 @@ export class NzTestInputGroupMultipleComponent {
 
 /** https://github.com/NG-ZORRO/ng-zorro-antd/issues/1795 **/
 @Component({
-  selector: 'nz-test-input-group-mix',
   template: `
-    <nz-input-group nzPrefixIcon="anticon anticon-user" nzAddOnAfter="@example.com">
+    <nz-input-group nzPrefixIcon="user" nzAddOnAfter="@example.com">
       <input type="text" nz-input placeholder="邮箱地址" />
     </nz-input-group>
   `
@@ -284,7 +278,6 @@ export class NzTestInputGroupMultipleComponent {
 export class NzTestInputGroupMixComponent {}
 
 @Component({
-  selector: 'nz-test-input-group-col',
   template: `
     <nz-input-group>
       <div nz-col nzSpan="4">

@@ -17,7 +17,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 
-import { scrollIntoView, InputBoolean } from 'ng-zorro-antd/core';
+import { InputBoolean, scrollIntoView } from 'ng-zorro-antd/core';
 
 export class NzOptionSelectionChange {
   constructor(public source: NzAutocompleteOptionComponent, public isUserInput: boolean = false) {}
@@ -54,10 +54,12 @@ export class NzAutocompleteOptionComponent {
 
   constructor(private changeDetectorRef: ChangeDetectorRef, private element: ElementRef) {}
 
-  select(): void {
+  select(emit: boolean = true): void {
     this.selected = true;
     this.changeDetectorRef.markForCheck();
-    this.emitSelectionChangeEvent();
+    if (emit) {
+      this.emitSelectionChangeEvent();
+    }
   }
 
   deselect(): void {

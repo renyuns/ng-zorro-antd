@@ -1,10 +1,11 @@
 import { registerLocaleData } from '@angular/common';
 import zh from '@angular/common/locales/zh';
 import { Component } from '@angular/core';
-import { async, fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { FormsModule, NgModel } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { CandyDate } from 'ng-zorro-antd/core';
 import { NZ_DATE_CONFIG } from '../i18n/date-config';
 import { NzCalendarHeaderComponent as CalendarHeader } from './nz-calendar-header.component';
 import { NzCalendarComponent as Calendar } from './nz-calendar.component';
@@ -110,7 +111,7 @@ describe('Calendar', () => {
       const host = fixture.debugElement.queryAll(By.directive(Calendar))[0];
       const header = host.query(By.directive(CalendarHeader)).injector.get(CalendarHeader);
 
-      expect(header.activeDate.getFullYear()).toBe(now.getFullYear());
+      expect(header.activeDate.getYear()).toBe(now.getFullYear());
       expect(header.activeDate.getMonth()).toBe(now.getMonth());
       expect(header.activeDate.getDate()).toBe(now.getDate());
     });
@@ -121,9 +122,9 @@ describe('Calendar', () => {
 
       const calendar = fixture.debugElement.queryAll(By.directive(Calendar))[1].injector.get(Calendar);
 
-      expect(calendar.activeDate).toBe(component.date0);
+      expect(calendar.activeDate.nativeDate).toBe(component.date0);
 
-      calendar.onDateSelect(now);
+      calendar.onDateSelect(new CandyDate(now));
       fixture.detectChanges();
 
       expect(component.date0).toBe(now);
@@ -140,7 +141,7 @@ describe('Calendar', () => {
       flush();
       fixture.detectChanges();
 
-      expect(calendar.activeDate).toBe(component.date1);
+      expect(calendar.activeDate.nativeDate).toBe(component.date1);
 
       model.viewToModelUpdate(now);
       fixture.detectChanges();
@@ -255,17 +256,6 @@ describe('Calendar', () => {
       expect(header.fullscreen).toBe(false);
     });
 
-    it('should update fullscreen by nzCard', () => {
-      component.card = true;
-
-      fixture.detectChanges();
-
-      const host = fixture.debugElement.queryAll(By.directive(Calendar))[2];
-      const header = host.query(By.directive(CalendarHeader)).injector.get(CalendarHeader);
-
-      expect(header.fullscreen).toBe(false);
-    });
-
     it('should support imperative access', () => {
       component.fullscreen = false;
 
@@ -274,7 +264,6 @@ describe('Calendar', () => {
       const calendar = fixture.debugElement.queryAll(By.directive(Calendar))[1].injector.get(Calendar);
 
       expect(calendar.nzFullscreen).toBe(false);
-      expect(calendar.nzCard).toBe(true);
     });
   });
 
@@ -451,7 +440,6 @@ class NzTestCalendarValueComponent {
   template: `
     <nz-calendar></nz-calendar>
     <nz-calendar [nzFullscreen]="fullscreen"></nz-calendar>
-    <nz-calendar [nzCard]="card"></nz-calendar>
   `
 })
 class NzTestCalendarFullscreenComponent {
@@ -505,12 +493,7 @@ class NzTestCalendarMonthFullCellComponent {}
 
 @Component({
   template: `
-    <nz-calendar
-      [(nzMode)]="mode"
-      [(ngModel)]="date0"
-      (nzPanelChange)="panelChange($event)"
-      (nzSelectChange)="selectChange($event)"
-    >
+    <nz-calendar [(nzMode)]="mode" [(ngModel)]="date0" (nzPanelChange)="panelChange($event)" (nzSelectChange)="selectChange($event)">
     </nz-calendar>
   `
 })

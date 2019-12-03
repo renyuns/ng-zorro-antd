@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { NzFormatBeforeDropEvent } from 'ng-zorro-antd';
-import { of, Observable } from 'rxjs';
+import { Component } from '@angular/core';
+import { NzFormatBeforeDropEvent } from 'ng-zorro-antd/core';
+import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 @Component({
@@ -9,7 +9,7 @@ import { delay } from 'rxjs/operators';
     <nz-tree [nzData]="nodes" nzDraggable nzBlockNode [nzBeforeDrop]="beforeDrop"> </nz-tree>
   `
 })
-export class NzDemoTreeDraggableConfirmComponent implements OnInit {
+export class NzDemoTreeDraggableConfirmComponent {
   nodes = [
     {
       title: '0-0',
@@ -19,7 +19,10 @@ export class NzDemoTreeDraggableConfirmComponent implements OnInit {
         {
           title: '0-0-0',
           key: '1001',
-          children: [{ title: '0-0-0-0', key: '10010', isLeaf: true }, { title: '0-0-0-1', key: '10011', isLeaf: true }]
+          children: [
+            { title: '0-0-0-0', key: '10010', isLeaf: true },
+            { title: '0-0-0-1', key: '10011', isLeaf: true }
+          ]
         },
         {
           title: '0-0-1',
@@ -38,6 +41,4 @@ export class NzDemoTreeDraggableConfirmComponent implements OnInit {
       return of(false);
     }
   }
-
-  ngOnInit(): void {}
 }

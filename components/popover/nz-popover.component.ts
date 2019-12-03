@@ -6,20 +6,10 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ContentChild,
-  Host,
-  Input,
-  Optional,
-  TemplateRef,
-  ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Host, Optional, ViewEncapsulation } from '@angular/core';
 
-import { isNotNil, zoomBigMotion, NzNoAnimationDirective } from 'ng-zorro-antd/core';
-import { NzToolTipComponent } from 'ng-zorro-antd/tooltip';
+import { NzNoAnimationDirective, zoomBigMotion } from 'ng-zorro-antd/core';
+import { isTooltipEmpty, NzToolTipComponent } from 'ng-zorro-antd/tooltip';
 
 @Component({
   selector: 'nz-popover',
@@ -40,18 +30,11 @@ import { NzToolTipComponent } from 'ng-zorro-antd/tooltip';
 export class NzPopoverComponent extends NzToolTipComponent {
   _prefix = 'ant-popover-placement';
 
-  /** Used to remove NzToolTipComponent @ContentChild('nzTemplate') */
-  @Input() @ContentChild('neverUsedTemplate') nzTitle: string | TemplateRef<void>;
-  @Input() @ContentChild('nzTemplate') nzContent: string | TemplateRef<void>;
-
   constructor(cdr: ChangeDetectorRef, @Host() @Optional() public noAnimation?: NzNoAnimationDirective) {
     super(cdr, noAnimation);
   }
 
-  protected isContentEmpty(): boolean {
-    const isTitleEmpty = this.nzTitle instanceof TemplateRef ? false : this.nzTitle === '' || !isNotNil(this.nzTitle);
-    const isContentEmpty =
-      this.nzContent instanceof TemplateRef ? false : this.nzContent === '' || !isNotNil(this.nzContent);
-    return isTitleEmpty && isContentEmpty;
+  protected isEmpty(): boolean {
+    return isTooltipEmpty(this.title) && isTooltipEmpty(this.content);
   }
 }

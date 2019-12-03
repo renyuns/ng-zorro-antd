@@ -1,5 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 
+interface ItemData {
+  name: string;
+  age: number;
+  street: string;
+  building: string;
+  number: number;
+  companyAddress: string;
+  companyName: string;
+  gender: string;
+}
+
 @Component({
   selector: 'nz-demo-table-grouping-columns',
   template: `
@@ -51,21 +62,22 @@ import { Component, OnInit } from '@angular/core';
 export class NzDemoTableGroupingColumnsComponent implements OnInit {
   widthConfig = ['100px', '200px', '200px', '100px', '100px', '200px', '200px', '100px'];
   scrollConfig = { x: '1200px', y: '240px' };
-  listOfDisplayData: any[] = [];
-  listOfData: any[] = [];
-  sortValue: string | null = null;
-  filterName = [{ text: 'Joe', value: 'Joe' }, { text: 'John', value: 'John' }];
+  listOfDisplayData: ItemData[] = [];
+  listOfData: ItemData[] = [];
+  sortValue: 'ascend' | 'descend' | null = null;
+  filterName = [
+    { text: 'Joe', value: 'Joe' },
+    { text: 'John', value: 'John' }
+  ];
   searchName: string[] = [];
 
   search(searchName: string[]): void {
     this.searchName = searchName;
-    const filterFunc = (item: any) => {
+    const filterFunc = (item: ItemData) => {
       return this.searchName.length ? this.searchName.some(name => item.name.indexOf(name) !== -1) : true;
     };
     const listOfData = this.listOfData.filter(item => filterFunc(item));
-    this.listOfDisplayData = listOfData.sort((a, b) =>
-      this.sortValue === 'ascend' ? (a.age > b.age ? 1 : -1) : b.age > a.age ? 1 : -1
-    );
+    this.listOfDisplayData = listOfData.sort((a, b) => (this.sortValue === 'ascend' ? (a.age > b.age ? 1 : -1) : b.age > a.age ? 1 : -1));
   }
 
   ngOnInit(): void {

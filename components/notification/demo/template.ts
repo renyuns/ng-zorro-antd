@@ -1,5 +1,5 @@
 import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { NzNotificationService } from 'ng-zorro-antd';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'nz-demo-notification-template',
@@ -19,7 +19,7 @@ import { NzNotificationService } from 'ng-zorro-antd';
   ]
 })
 export class NzDemoNotificationTemplateComponent {
-  @ViewChild(TemplateRef) template: TemplateRef<{}>;
+  @ViewChild(TemplateRef, { static: false }) template: TemplateRef<{}>;
 
   ninja(): void {
     const fruits = [

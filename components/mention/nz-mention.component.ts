@@ -19,7 +19,6 @@ import { TemplatePortal } from '@angular/cdk/portal';
 
 import { DOCUMENT } from '@angular/common';
 import {
-  AfterContentInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -29,6 +28,7 @@ import {
   Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   Optional,
   Output,
   SimpleChanges,
@@ -36,12 +36,20 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core';
+
 import { fromEvent, merge, Subscription } from 'rxjs';
 
-import { getCaretCoordinates, getMentions, DEFAULT_MENTION_POSITIONS, InputBoolean } from 'ng-zorro-antd/core';
+import {
+  DEFAULT_MENTION_BOTTOM_POSITIONS,
+  DEFAULT_MENTION_TOP_POSITIONS,
+  getCaretCoordinates,
+  getMentions,
+  InputBoolean
+} from 'ng-zorro-antd/core';
 
 import { NzMentionSuggestionDirective } from './nz-mention-suggestions';
 import { NzMentionTriggerDirective } from './nz-mention-trigger';
+import { NzMentionService } from './nz-mention.service';
 
 export interface MentionOnSearchTypes {
   value: string;
@@ -62,6 +70,7 @@ export type MentionPlacement = 'top' | 'bottom';
   templateUrl: './nz-mention.component.html',
   preserveWhitespaces: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [NzMentionService],
   styles: [
     `
       .ant-mention-dropdown {
@@ -75,7 +84,7 @@ export type MentionPlacement = 'top' | 'bottom';
     `
   ]
 })
-export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChanges {
+export class NzMentionComponent implements OnDestroy, OnInit, OnChanges {
   @Input() nzValueWith: (value: any) => string = value => value; // tslint:disable-line:no-any
   @Input() nzPrefix: string | string[] = '@';
   @Input() @InputBoolean() nzLoading = false;
@@ -85,10 +94,10 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
   @Output() readonly nzOnSelect: EventEmitter<string | {}> = new EventEmitter();
   @Output() readonly nzOnSearchChange: EventEmitter<MentionOnSearchTypes> = new EventEmitter();
 
-  @ContentChild(NzMentionTriggerDirective) trigger: NzMentionTriggerDirective;
-  @ViewChild(TemplateRef) suggestionsTemp: TemplateRef<void>;
+  trigger: NzMentionTriggerDirective;
+  @ViewChild(TemplateRef, { static: false }) suggestionsTemp: TemplateRef<void>;
 
-  @ContentChild(NzMentionSuggestionDirective, { read: TemplateRef })
+  @ContentChild(NzMentionSuggestionDirective, { static: false, read: TemplateRef })
   // tslint:disable-next-line:no-any
   set suggestionChild(value: TemplateRef<{ $implicit: any }>) {
     if (value) {
@@ -118,8 +127,18 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
     @Optional() @Inject(DOCUMENT) private ngDocument: any, // tslint:disable-line:no-any
     private changeDetectorRef: ChangeDetectorRef,
     private overlay: Overlay,
-    private viewContainerRef: ViewContainerRef
+    private viewContainerRef: ViewContainerRef,
+    private nzMentionService: NzMentionService
   ) {}
+
+  ngOnInit(): void {
+    this.nzMentionService.triggerChanged().subscribe(trigger => {
+      this.trigger = trigger;
+      this.bindTriggerEvents();
+      this.closeDropdown();
+      this.overlayRef = null;
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.hasOwnProperty('nzSuggestions')) {
@@ -129,10 +148,6 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
         this.resetDropdown(false);
       }
     }
-  }
-
-  ngAfterContentInit(): void {
-    this.bindTriggerEvents();
   }
 
   ngOnDestroy(): void {
@@ -155,7 +170,7 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
   }
 
   getMentions(): string[] {
-    return getMentions(this.trigger.value, this.nzPrefix);
+    return this.trigger ? getMentions(this.trigger.value, this.nzPrefix) : [];
   }
 
   selectSuggestion(suggestion: string | {}): void {
@@ -271,12 +286,7 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
       const startPos = value.lastIndexOf(prefix[i], selectionStart);
       const endPos = value.indexOf(' ', selectionStart) > -1 ? value.indexOf(' ', selectionStart) : value.length;
       const mention = value.substring(startPos, endPos);
-      if (
-        (startPos > 0 && value[startPos - 1] !== ' ') ||
-        startPos < 0 ||
-        mention.includes(prefix[i], 1) ||
-        mention.includes(' ')
-      ) {
+      if ((startPos > 0 && value[startPos - 1] !== ' ') || startPos < 0 || mention.includes(prefix[i], 1) || mention.includes(' ')) {
         this.cursorMention = null;
         this.cursorMentionStart = -1;
         this.cursorMentionEnd = -1;
@@ -296,14 +306,14 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
       coordinates.top -
       this.triggerNativeElement.getBoundingClientRect().height -
       this.triggerNativeElement.scrollTop +
-      (this.nzPlacement === 'bottom' ? coordinates.height : 0);
+      (this.nzPlacement === 'bottom' ? coordinates.height - 6 : -6);
     const left = coordinates.left - this.triggerNativeElement.scrollLeft;
     this.positionStrategy.withDefaultOffsetX(left).withDefaultOffsetY(top);
     if (this.nzPlacement === 'bottom') {
-      this.positionStrategy.withPositions([DEFAULT_MENTION_POSITIONS[0]]);
+      this.positionStrategy.withPositions([...DEFAULT_MENTION_BOTTOM_POSITIONS]);
     }
     if (this.nzPlacement === 'top') {
-      this.positionStrategy.withPositions([DEFAULT_MENTION_POSITIONS[1]]);
+      this.positionStrategy.withPositions([...DEFAULT_MENTION_TOP_POSITIONS]);
     }
     this.positionStrategy.apply();
   }
@@ -314,7 +324,12 @@ export class NzMentionComponent implements OnDestroy, AfterContentInit, OnChange
       fromEvent<TouchEvent>(this.ngDocument, 'touchend')
     ).subscribe((event: MouseEvent | TouchEvent) => {
       const clickTarget = event.target as HTMLElement;
-      if (clickTarget !== this.trigger.el.nativeElement && this.isOpen) {
+      if (
+        this.isOpen &&
+        clickTarget !== this.trigger.el.nativeElement &&
+        !!this.overlayRef &&
+        !this.overlayRef.overlayElement.contains(clickTarget)
+      ) {
         this.closeDropdown();
       }
     });

@@ -7,12 +7,12 @@
  */
 
 import {
-  forwardRef,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ContentChild,
   EventEmitter,
+  forwardRef,
   Host,
   Input,
   OnChanges,
@@ -29,26 +29,27 @@ import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import {
-  isNotNil,
-  toBoolean,
   InputBoolean,
+  isNotNil,
+  NzConfigService,
   NzFormatBeforeDropEvent,
   NzFormatEmitEvent,
   NzNoAnimationDirective,
   NzTreeBase,
   NzTreeBaseService,
   NzTreeHigherOrderServiceToken,
-  NzTreeNode
+  NzTreeNode,
+  warnDeprecation,
+  WithConfig
 } from 'ng-zorro-antd/core';
 
 import { NzTreeService } from './nz-tree.service';
 
-export function NzTreeServiceFactory(
-  higherOrderService: NzTreeBaseService,
-  treeService: NzTreeService
-): NzTreeBaseService {
+export function NzTreeServiceFactory(higherOrderService: NzTreeBaseService, treeService: NzTreeService): NzTreeBaseService {
   return higherOrderService ? higherOrderService : treeService;
 }
+
+const NZ_CONFIG_COMPONENT_NAME = 'tree';
 
 @Component({
   selector: 'nz-tree',
@@ -70,38 +71,46 @@ export function NzTreeServiceFactory(
   ]
 })
 export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, ControlValueAccessor, OnChanges {
-  @Input() @InputBoolean() nzShowIcon = false;
-  @Input() @InputBoolean() nzShowExpand = true;
+  @Input() @InputBoolean() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) nzShowIcon: boolean;
+  @Input() @InputBoolean() nzShowExpand: boolean = true;
   @Input() @InputBoolean() nzShowLine = false;
   @Input() nzExpandedIcon: TemplateRef<{ $implicit: NzTreeNode }>;
   @Input() @InputBoolean() nzCheckable = false;
   @Input() @InputBoolean() nzAsyncData = false;
-  @Input() @InputBoolean() nzDraggable = false;
-  @Input() @InputBoolean() nzExpandAll = false;
-  @Input() @InputBoolean() nzHideUnMatched = false;
+  @Input() @InputBoolean() nzDraggable: boolean = false;
+
+  @Input() @InputBoolean() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) nzHideUnMatched: boolean;
   @Input() @InputBoolean() nzSelectMode = false;
   @Input() @InputBoolean() nzCheckStrictly = false;
-  @Input() @InputBoolean() nzBlockNode = false;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) @InputBoolean() nzBlockNode: boolean;
+  @Input() @InputBoolean() nzExpandAll = false;
 
-  @Input() @ContentChild('nzTreeTemplate') nzTreeTemplate: TemplateRef<{ $implicit: NzTreeNode }>;
+  @Input() nzTreeTemplate: TemplateRef<{ $implicit: NzTreeNode }>;
+  @ContentChild('nzTreeTemplate', { static: true }) nzTreeTemplateChild: TemplateRef<{ $implicit: NzTreeNode }>;
+  get treeTemplate(): TemplateRef<{ $implicit: NzTreeNode }> {
+    return this.nzTreeTemplate || this.nzTreeTemplateChild;
+  }
 
   /**
-   * @deprecated use
-   * nzExpandAll instead
+   * @deprecated 9.0.0 use `nzExpandAll` instead.
    */
-  @Input() @InputBoolean() nzDefaultExpandAll = false;
-  @Input() nzBeforeDrop: (confirm: NzFormatBeforeDropEvent) => Observable<boolean>;
-
   @Input()
   @InputBoolean()
-  set nzMultiple(value: boolean) {
-    this._nzMultiple = toBoolean(value);
-    this.nzTreeService.isMultiple = toBoolean(value);
+  set nzDefaultExpandAll(value: boolean) {
+    warnDeprecation(`'nzDefaultExpandAll' would be removed in 9.0.0. Please use 'nzExpandAll' instead.`);
+    this.nzExpandAll = value;
+    this._nzDefaultExpandAll = value;
   }
 
-  get nzMultiple(): boolean {
-    return this._nzMultiple;
+  get nzDefaultExpandAll(): boolean {
+    return this._nzDefaultExpandAll;
   }
+
+  private _nzDefaultExpandAll = false;
+
+  @Input() nzBeforeDrop: (confirm: NzFormatBeforeDropEvent) => Observable<boolean>;
+
+  @Input() @InputBoolean() nzMultiple = false;
 
   @Input()
   // tslint:disable-next-line:no-any
@@ -110,29 +119,29 @@ export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, Co
   }
 
   /**
-   * @deprecated use
-   * nzExpandedKeys instead
+   * @deprecated 9.0.0 - use `nzExpandedKeys` instead.
    */
   @Input()
   set nzDefaultExpandedKeys(value: string[]) {
+    warnDeprecation(`'nzDefaultExpandedKeys' would be removed in 9.0.0. Please use 'nzExpandedKeys' instead.`);
     this.nzDefaultSubject.next({ type: 'nzExpandedKeys', keys: value });
   }
 
   /**
-   * @deprecated use
-   * nzSelectedKeys instead
+   * @deprecated 9.0.0 - use `nzSelectedKeys` instead.
    */
   @Input()
   set nzDefaultSelectedKeys(value: string[]) {
+    warnDeprecation(`'nzDefaultSelectedKeys' would be removed in 9.0.0. Please use 'nzSelectedKeys' instead.`);
     this.nzDefaultSubject.next({ type: 'nzSelectedKeys', keys: value });
   }
 
   /**
-   * @deprecated use
-   * nzCheckedKeys instead
+   * @deprecated 9.0.0 - use `nzCheckedKeys` instead.
    */
   @Input()
   set nzDefaultCheckedKeys(value: string[]) {
+    warnDeprecation(`'nzDefaultCheckedKeys' would be removed in 9.0.0. Please use 'nzCheckedKeys' instead.`);
     this.nzDefaultSubject.next({ type: 'nzCheckedKeys', keys: value });
   }
 
@@ -157,6 +166,10 @@ export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, Co
     this.nzTreeService.searchExpand(value);
     if (isNotNil(value)) {
       this.nzSearchValueChange.emit(this.nzTreeService.formatEvent('search', null, null));
+      /**
+       * @deprecated 9.0.0 - use `nzOnSearchNode` instead.
+       * Hide warning, need remove next version
+       */
       this.nzOnSearchNode.emit(this.nzTreeService.formatEvent('search', null, null));
     }
   }
@@ -166,39 +179,37 @@ export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, Co
   }
 
   /**
-   * To render nodes if root is changed
+   * To render nodes if root is changed.
    */
   get nzNodes(): NzTreeNode[] {
     return this.nzTreeService.rootNodes;
   }
 
-  // model bind
   @Output() readonly nzExpandedKeysChange: EventEmitter<string[]> = new EventEmitter<string[]>();
   @Output() readonly nzSelectedKeysChange: EventEmitter<string[]> = new EventEmitter<string[]>();
   @Output() readonly nzCheckedKeysChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  @Output() readonly nzSearchValueChange: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
+  @Output() readonly nzSearchValueChange = new EventEmitter<NzFormatEmitEvent>();
+
   /**
-   * @deprecated use
-   * nzSearchValueChange instead
+   * @deprecated use `nzSearchValueChange` instead.
    */
-  @Output() readonly nzOnSearchNode: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
+  @Output() readonly nzOnSearchNode = new EventEmitter<NzFormatEmitEvent>();
 
-  @Output() readonly nzClick: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzDblClick: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzContextMenu: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzCheckBoxChange: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzExpandChange: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
+  @Output() readonly nzClick = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzDblClick = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzContextMenu = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzCheckBoxChange = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzExpandChange = new EventEmitter<NzFormatEmitEvent>();
 
-  @Output() readonly nzOnDragStart: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzOnDragEnter: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzOnDragOver: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzOnDragLeave: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzOnDrop: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
-  @Output() readonly nzOnDragEnd: EventEmitter<NzFormatEmitEvent> = new EventEmitter();
+  @Output() readonly nzOnDragStart = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzOnDragEnter = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzOnDragOver = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzOnDragLeave = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzOnDrop = new EventEmitter<NzFormatEmitEvent>();
+  @Output() readonly nzOnDragEnd = new EventEmitter<NzFormatEmitEvent>();
 
   _searchValue: string;
-  _nzMultiple: boolean = false;
   nzDefaultSubject = new ReplaySubject<{ type: string; keys: string[] }>(6);
   destroy$ = new Subject();
   prefixCls = 'ant-tree';
@@ -241,6 +252,7 @@ export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, Co
 
   constructor(
     nzTreeService: NzTreeBaseService,
+    public nzConfigService: NzConfigService,
     private cdr: ChangeDetectorRef,
     @Host() @Optional() public noAnimation?: NzNoAnimationDirective
   ) {
@@ -314,10 +326,10 @@ export class NzTreeComponent extends NzTreeBase implements OnInit, OnDestroy, Co
 
   ngOnChanges(changes: { [propertyName: string]: SimpleChange }): void {
     if (changes.nzCheckStrictly) {
-      this.nzTreeService.isCheckStrictly = toBoolean(changes.nzCheckStrictly.currentValue);
+      this.nzTreeService.isCheckStrictly = this.nzCheckStrictly;
     }
     if (changes.nzMultiple) {
-      this.nzTreeService.isMultiple = toBoolean(changes.nzMultiple.currentValue);
+      this.nzTreeService.isMultiple = this.nzMultiple;
     }
   }
 

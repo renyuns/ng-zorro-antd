@@ -1,5 +1,5 @@
 import { Component, DebugElement } from '@angular/core';
-import { fakeAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NzSelectUnselectableDirective } from './nz-select-unselectable.directive';
 
@@ -28,7 +28,6 @@ describe('select unselectable', () => {
 });
 
 @Component({
-  selector: 'nz-test-select-unselectable',
   template: `
     <div nz-select-unselectable></div>
   `

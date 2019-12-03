@@ -9,13 +9,13 @@
 import { FocusMonitor } from '@angular/cdk/a11y';
 import { DOWN_ARROW, ENTER, UP_ARROW } from '@angular/cdk/keycodes';
 import {
-  forwardRef,
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
+  forwardRef,
   Input,
   OnChanges,
   OnDestroy,
@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { isNotNil, InputBoolean, NzSizeLDSType } from 'ng-zorro-antd/core';
+import { InputBoolean, isNotNil, NzSizeLDSType } from 'ng-zorro-antd/core';
 
 @Component({
   selector: 'nz-input-number',
@@ -52,7 +52,7 @@ import { isNotNil, InputBoolean, NzSizeLDSType } from 'ng-zorro-antd/core';
 })
 export class NzInputNumberComponent implements ControlValueAccessor, AfterViewInit, OnChanges, OnInit, OnDestroy {
   private autoStepTimer: number;
-  private actualValue: string | number;
+  public actualValue: string | number;
   private value: string | number;
   displayValue: string | number;
   isFocused = false;
@@ -62,7 +62,7 @@ export class NzInputNumberComponent implements ControlValueAccessor, AfterViewIn
   onTouched: () => void = () => null;
   @Output() readonly nzBlur = new EventEmitter();
   @Output() readonly nzFocus = new EventEmitter();
-  @ViewChild('inputElement') inputElement: ElementRef;
+  @ViewChild('inputElement', { static: true }) inputElement: ElementRef<HTMLInputElement>;
   @Input() nzSize: NzSizeLDSType = 'default';
   @Input() nzMin: number = -Infinity;
   @Input() nzMax: number = Infinity;
@@ -70,6 +70,7 @@ export class NzInputNumberComponent implements ControlValueAccessor, AfterViewIn
   @Input() nzPrecision: number;
   @Input() nzPlaceHolder = '';
   @Input() nzStep = 1;
+  @Input() nzId: string;
   @Input() @InputBoolean() nzDisabled = false;
   @Input() @InputBoolean() nzAutoFocus = false;
   @Input() nzFormatter: (value: number) => string | number = value => value;
@@ -91,7 +92,7 @@ export class NzInputNumberComponent implements ControlValueAccessor, AfterViewIn
         .replace(/。/g, '.')
         .replace(/[^\w\.-]+/g, '')
     );
-    this.inputElement.nativeElement.value = this.actualValue;
+    this.inputElement.nativeElement.value = `${this.actualValue}`;
   }
 
   getCurrentValidValue(value: string | number): number {
@@ -108,12 +109,7 @@ export class NzInputNumberComponent implements ControlValueAccessor, AfterViewIn
 
   // '1.' '1x' 'xx' '' => are not complete numbers
   isNotCompleteNumber(num: string | number): boolean {
-    return (
-      isNaN(num as number) ||
-      num === '' ||
-      num === null ||
-      !!(num && num.toString().indexOf('.') === num.toString().length - 1)
-    );
+    return isNaN(num as number) || num === '' || num === null || !!(num && num.toString().indexOf('.') === num.toString().length - 1);
   }
 
   getValidValue(value?: string | number): string | number | undefined {
@@ -281,7 +277,7 @@ export class NzInputNumberComponent implements ControlValueAccessor, AfterViewIn
     this.actualValue = value;
     const displayValue = isNotNil(this.nzFormatter(this.value)) ? this.nzFormatter(this.value) : '';
     this.displayValue = displayValue;
-    this.inputElement.nativeElement.value = displayValue;
+    this.inputElement.nativeElement.value = `${displayValue}`;
     this.disabledUp = this.disabledDown = false;
     if (value || value === 0) {
       const val = Number(value);

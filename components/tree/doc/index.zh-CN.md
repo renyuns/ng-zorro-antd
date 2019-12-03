@@ -9,32 +9,33 @@ subtitle: 树形控件
 
 文件夹、组织架构、生物分类、国家地区等等，世间万物的大多数结构都是树形结构。使用`树控件`可以完整展现其中的层级关系，并具有展开收起选择等交互功能。
 
-## API
-
-### 单独引入此组件
+## 单独引入此组件
 
 想要了解更多关于单独引入组件的内容，可以在[快速上手](/docs/getting-started/zh#单独引入某个组件)页面进行查看。
 
 ```ts
-import { NzTreeModule } from 'ng-zorro-antd';
+import { NzTreeModule } from 'ng-zorro-antd/tree';
 ```
+
+## API
 
 ### nz-tree
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| `[nzData]` | 元数据 | `NzTreeNodeOptions[]｜NzTreeNode[]` | `[]` |
-| `[nzBlockNode]` | 是否节点占据一行 | `boolean` | `false` |
+| 参数 | 说明 | 类型 | 默认值 | 全局配置 |
+| --- | --- | --- | --- | --- |
+| `[nzData]` | 元数据 | `NzTreeNodeOptions[] \| NzTreeNode[]` | `[]` |
+| `[nzBlockNode]` | 是否节点占据一行 | `boolean` | `false` | ✅ |
 | `[nzCheckable]` | 节点前添加 Checkbox 复选框 | `boolean` | `false` |
-| `[nzShowExpand]` | 节点前添加展开图标 | `boolean` | `true` |
-| `[nzShowLine]` | 是否展示连接线 | `boolean` | `false` |
+| `[nzShowExpand]` | 节点前添加展开图标 | `boolean` | `true` | |
+| `[nzShowLine]` | 是否展示连接线 | `boolean` | `false` | |
 | `[nzExpandedIcon]` | 自定义展开图标 | `TemplateRef<{ $implicit: NzTreeNode }>` | - |
-| `[nzShowIcon]` | 是否展示 TreeNode title 前的图标，没有默认样式 | `boolean` | `false` |
+| `[nzShowIcon]` | 是否展示 TreeNode title 前的图标，没有默认样式 | `boolean` | `false` | ✅ |
 | `[nzAsyncData]` | 是否异步加载(显示加载状态) | `boolean` | `false` |
-| `[nzDraggable]` | 设置节点可拖拽（IE>8） | `boolean` | `false` |
+| `[nzDraggable]` | 设置节点可拖拽 | `boolean` | `false` |
 | `[nzMultiple]` | 支持点选多个节点（节点本身） | `boolean` | `false` |
-| `[nzHideUnMatched]` | 搜索隐藏未匹配的节点 | `boolean` | `false` |
-| `[nzCheckStrictly]` | checkable状态下节点选择完全受控（父子节点选中状态不再关联） | `boolean` | `false` |
+| `[nzHideUnMatched]` | 搜索隐藏未匹配的节点 | `boolean` | `false` | ✅ |
+| `[nzCheckStrictly]` | checkable 状态下节点选择完全受控（父子节点选中状态不再关联） | `boolean` | `false` |
+| `[nzTreeTemplate]` | 自定义节点 | `TemplateRef<{ $implicit: NzTreeNode }>` | - |
 | `[nzExpandAll]` | 默认展开所有树节点 | `boolean` | `false` |
 | `[nzExpandedKeys]` | 展开指定的树节点 | `string[]` | `[]` |
 | `[nzCheckedKeys]` | 指定选中复选框的树节点 | `string[]` | `[]` |
@@ -90,7 +91,7 @@ import { NzTreeModule } from 'ng-zorro-antd';
 | --- | --- | --- | --- |
 | eventName | 事件名 | enum: `click` `dblclick` `contextmenu` `check` `expand` `search` & `dragstart` `dragenter` `dragover` `dragleave` `drop` `dragend` | - |
 | node | 当前操作节点(拖拽时表示目标节点) | `NzTreeNode` | `null` |
-| event | 原生事件 | `'MouseEvent'｜'DragEvent'` | `null` |
+| event | 原生事件 | `'MouseEvent' \| 'DragEvent'` | `null` |
 | dragNode? | 当前拖拽节点(拖拽时存在) | `NzTreeNode` | `null` |
 | selectedKeys? | 已选中的节点key(单击时存在) | `NzTreeNode[]` | `[]` |
 | checkedKeys? | checkBox 已选中的节点key(点击 checkBox 存在) | `NzTreeNode[]` | `[]` |

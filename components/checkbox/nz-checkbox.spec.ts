@@ -1,6 +1,6 @@
 import { Component, DebugElement, ViewChild } from '@angular/core';
-import { fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { NzCheckboxGroupComponent } from './nz-checkbox-group.component';
@@ -38,12 +38,8 @@ describe('checkbox', () => {
       fixture.detectChanges();
       expect(checkbox.nativeElement.classList.contains('ant-checkbox-wrapper')).toBe(true);
       expect(checkbox.nativeElement.firstElementChild!.classList.contains('ant-checkbox')).toBe(true);
-      expect(checkbox.nativeElement.firstElementChild.firstElementChild!.classList.contains('ant-checkbox-input')).toBe(
-        true
-      );
-      expect(checkbox.nativeElement.firstElementChild.lastElementChild.classList.contains('ant-checkbox-inner')).toBe(
-        true
-      );
+      expect(checkbox.nativeElement.firstElementChild.firstElementChild!.classList.contains('ant-checkbox-input')).toBe(true);
+      expect(checkbox.nativeElement.firstElementChild.lastElementChild.classList.contains('ant-checkbox-inner')).toBe(true);
       expect(checkbox.nativeElement.lastElementChild.innerText).toBe('Checkbox');
     });
     it('should click change', () => {
@@ -303,7 +299,6 @@ describe('checkbox', () => {
 });
 
 @Component({
-  selector: 'nz-test-checkbox-single',
   template: `
     <label
       nz-checkbox
@@ -317,7 +312,7 @@ describe('checkbox', () => {
   `
 })
 export class NzTestCheckboxSingleComponent {
-  @ViewChild(NzCheckboxComponent) nzCheckboxComponent: NzCheckboxComponent;
+  @ViewChild(NzCheckboxComponent, { static: false }) nzCheckboxComponent: NzCheckboxComponent;
   disabled = false;
   autoFocus = false;
   checked = false;
@@ -326,13 +321,8 @@ export class NzTestCheckboxSingleComponent {
 }
 
 @Component({
-  selector: 'nz-test-checkbox-group',
   template: `
-    <nz-checkbox-group
-      [nzDisabled]="disabled"
-      [ngModel]="options"
-      (ngModelChange)="modelChange($event)"
-    ></nz-checkbox-group>
+    <nz-checkbox-group [nzDisabled]="disabled" [ngModel]="options" (ngModelChange)="modelChange($event)"></nz-checkbox-group>
   `
 })
 export class NzTestCheckboxGroupComponent {
@@ -346,7 +336,6 @@ export class NzTestCheckboxGroupComponent {
 }
 
 @Component({
-  selector: 'nz-test-checkbox-wrapper',
   template: `
     <nz-checkbox-wrapper (nzOnChange)="onChange($event)">
       <div><label nz-checkbox nzValue="A" [ngModel]="true">A</label></div>
@@ -362,7 +351,6 @@ export class NzTestCheckboxWrapperComponent {
 }
 
 @Component({
-  selector: 'nz-test-checkbox-form',
   template: `
     <form [formGroup]="formGroup">
       <label nz-checkbox formControlName="checkbox"></label>
@@ -384,7 +372,6 @@ export class NzTestCheckboxFormComponent {
 }
 
 @Component({
-  selector: 'nz-test-checkbox-group-form',
   template: `
     <form [formGroup]="formGroup">
       <nz-checkbox-group formControlName="checkboxGroup"></nz-checkbox-group>

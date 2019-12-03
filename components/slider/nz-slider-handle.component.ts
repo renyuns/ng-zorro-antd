@@ -19,8 +19,8 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { InputBoolean, NGStyleInterface } from 'ng-zorro-antd/core';
-import { NzToolTipComponent } from 'ng-zorro-antd/tooltip';
+import { InputBoolean, NgStyleInterface } from 'ng-zorro-antd/core';
+import { NzTooltipDirective } from 'ng-zorro-antd/tooltip';
 
 import { SliderShowTooltip } from './nz-slider-definitions';
 import { NzSliderComponent } from './nz-slider.component';
@@ -38,17 +38,18 @@ import { NzSliderComponent } from './nz-slider.component';
   }
 })
 export class NzSliderHandleComponent implements OnChanges, OnDestroy {
-  @ViewChild(NzToolTipComponent) tooltip: NzToolTipComponent;
+  @ViewChild(NzTooltipDirective, { static: false }) tooltip: NzTooltipDirective;
 
   @Input() nzVertical: string;
   @Input() nzOffset: number;
   @Input() nzValue: number;
   @Input() nzTooltipVisible: SliderShowTooltip = 'default';
+  @Input() nzTooltipPlacement: string;
   @Input() nzTipFormatter: (value: number) => string;
   @Input() @InputBoolean() nzActive = false;
 
   tooltipTitle: string;
-  style: NGStyleInterface = {};
+  style: NgStyleInterface = {};
 
   private hovers_ = new Subscription();
 
@@ -119,5 +120,6 @@ export class NzSliderHandleComponent implements OnChanges, OnDestroy {
 
   private updateStyle(): void {
     this.style[this.nzVertical ? 'bottom' : 'left'] = `${this.nzOffset}%`;
+    this.cdr.markForCheck();
   }
 }

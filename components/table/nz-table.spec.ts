@@ -1,5 +1,5 @@
 import { Component, DebugElement, Injector, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { async, fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import en_US from '../i18n/languages/en_US';
 import { NzI18nService } from '../i18n/nz-i18n.service';
@@ -316,7 +316,6 @@ describe('nz-table', () => {
 });
 
 @Component({
-  selector: 'nz-test-table-basic',
   template: `
     <nz-table
       #dynamicTable
@@ -365,7 +364,7 @@ describe('nz-table', () => {
   `
 })
 export class NzTestTableBasicComponent implements OnInit {
-  @ViewChild(NzTableComponent) nzTableComponent: NzTableComponent;
+  @ViewChild(NzTableComponent, { static: false }) nzTableComponent: NzTableComponent;
   pageIndex = 1;
   pageIndexChange = jasmine.createSpy('pageIndex callback');
   pageSize = 10;
@@ -408,7 +407,6 @@ export class NzTestTableBasicComponent implements OnInit {
 }
 
 @Component({
-  selector: 'nz-test-table-scroll',
   template: `
     <div style="display: block;" [style.width.px]="width">
       <nz-table #nzTable [nzData]="dataSet" [nzPageSize]="10" [nzScroll]="{ x: '600px', y: '240px' }">
@@ -451,7 +449,7 @@ export class NzTestTableBasicComponent implements OnInit {
   styleUrls: ['../style/index.less', '../spin/style/index.less', './style/index.less']
 })
 export class NzTestTableScrollComponent implements OnInit {
-  @ViewChild(NzTableComponent) nzTableComponent: NzTableComponent;
+  @ViewChild(NzTableComponent, { static: false }) nzTableComponent: NzTableComponent;
   dataSet: Array<{ name: string; age: number; address: string }> = [];
   width = 300;
 
@@ -469,13 +467,7 @@ export class NzTestTableScrollComponent implements OnInit {
 /** https://github.com/NG-ZORRO/ng-zorro-antd/issues/3004 **/
 @Component({
   template: `
-    <nz-table
-      #nzTable
-      [nzData]="data"
-      [(nzPageIndex)]="pageIndex"
-      [(nzPageSize)]="pageSize"
-      (nzPageIndexChange)="(pageIndexChange)"
-    >
+    <nz-table #nzTable [nzData]="data" [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" (nzPageIndexChange)="(pageIndexChange)">
       <thead>
         <tr>
           <th>ID</th>

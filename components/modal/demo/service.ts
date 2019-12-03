@@ -1,7 +1,7 @@
 /* entryComponents: NzModalCustomComponent */
 
 import { Component, Input, TemplateRef } from '@angular/core';
-import { NzModalRef, NzModalService } from 'ng-zorro-antd';
+import { NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
 
 @Component({
   selector: 'nz-demo-modal-service',
@@ -98,7 +98,7 @@ export class NzDemoModalServiceComponent {
       },
       nzFooter: [
         {
-          label: 'change component tilte from outside',
+          label: 'change component title from outside',
           onClick: componentInstance => {
             componentInstance!.title = 'title in inner component is changed';
           }
@@ -131,8 +131,7 @@ export class NzDemoModalServiceComponent {
         {
           label: 'Confirm',
           type: 'primary',
-          onClick: () =>
-            this.modalService.confirm({ nzTitle: 'Confirm Modal Title', nzContent: 'Confirm Modal Content' })
+          onClick: () => this.modalService.confirm({ nzTitle: 'Confirm Modal Title', nzContent: 'Confirm Modal Content' })
         },
         {
           label: 'Change Button Status',

@@ -6,19 +6,10 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  TemplateRef,
-  ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, TemplateRef, ViewEncapsulation } from '@angular/core';
 
-import { isNonEmptyString, isTemplateRef } from 'ng-zorro-antd/core';
+import { CandyDate, isNonEmptyString, isTemplateRef } from 'ng-zorro-antd/core';
 import { NzCalendarI18nInterface } from 'ng-zorro-antd/i18n';
-import { CandyDate } from '../candy-date/candy-date';
 
 @Component({
   encapsulation: ViewEncapsulation.None,

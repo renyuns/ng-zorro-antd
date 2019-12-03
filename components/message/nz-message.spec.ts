@@ -1,9 +1,9 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { fakeAsync, inject, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { dispatchMouseEvent } from 'ng-zorro-antd/core';
+import { dispatchMouseEvent, NzConfigService } from 'ng-zorro-antd/core';
 
 import { NZ_MESSAGE_CONFIG } from './nz-message-config';
 import { NzMessageModule } from './nz-message.module';
@@ -11,10 +11,10 @@ import { NzMessageService } from './nz-message.service';
 
 describe('NzMessage', () => {
   let messageService: NzMessageService;
-  let overlayContainer: OverlayContainer;
   let overlayContainerElement: HTMLElement;
   let fixture: ComponentFixture<NzTestMessageBasicComponent>;
   let testComponent: NzTestMessageBasicComponent;
+  let nzConfigService: NzConfigService;
 
   beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
@@ -28,12 +28,17 @@ describe('NzMessage', () => {
 
   beforeEach(inject([NzMessageService, OverlayContainer], (m: NzMessageService, oc: OverlayContainer) => {
     messageService = m;
-    overlayContainer = oc;
-    overlayContainerElement = oc.getContainerElement();
+    if (!overlayContainerElement) {
+      overlayContainerElement = oc.getContainerElement();
+    }
+  }));
+
+  beforeEach(inject([NzConfigService], (c: NzConfigService) => {
+    nzConfigService = c;
   }));
 
   afterEach(() => {
-    overlayContainer.ngOnDestroy();
+    messageService.remove();
   });
 
   beforeEach(() => {
@@ -53,7 +58,6 @@ describe('NzMessage', () => {
   it('should open a message box with error', () => {
     messageService.error('ERROR');
     fixture.detectChanges();
-
     expect(overlayContainerElement.textContent).toContain('ERROR');
     expect(overlayContainerElement.querySelector('.anticon-close-circle')).not.toBeNull();
   });
@@ -123,6 +127,9 @@ describe('NzMessage', () => {
 
     messageService.remove(filledMessage.messageId);
     fixture.detectChanges();
+    filledMessage!.onClose!.subscribe(() => {
+      console.log(1);
+    });
     expect(overlayContainerElement.textContent).not.toContain('SUCCESS');
   }));
 
@@ -154,24 +161,36 @@ describe('NzMessage', () => {
     expect(overlayContainerElement.textContent).not.toContain('EXISTS');
   }));
 
+  /**
+   * @deprecated This test is going to be removed in 9.0.0
+   */
   it('should reset default config dynamically', fakeAsync(() => {
     messageService.config({ nzDuration: 0 });
     messageService.create('loading', 'EXISTS');
     fixture.detectChanges();
-    tick(1000);
+    tick(10000);
+    expect(overlayContainerElement.textContent).toContain('EXISTS');
+  }));
+
+  it('should reset default config from config service', fakeAsync(() => {
+    nzConfigService.set('message', { nzDuration: 0 });
+    messageService.create('loading', 'EXISTS');
+    fixture.detectChanges();
+    tick(10000);
     expect(overlayContainerElement.textContent).toContain('EXISTS');
   }));
 
   it('should emit event when message close', fakeAsync(() => {
-    let onCloseFlag = false;
+    messageService.config({ nzDuration: 2000 });
+    const closeSpy = jasmine.createSpy('message closed');
     const msg = messageService.create('loading', 'CLOSE');
-    msg.onClose!.subscribe(() => {
-      onCloseFlag = true;
-    });
-
+    const messageId = msg.messageId;
+    msg.onClose!.subscribe(closeSpy);
     fixture.detectChanges();
-    tick(50000);
-    expect(onCloseFlag).toBeTruthy();
+    messageService.remove(messageId);
+    tick(2000);
+    fixture.detectChanges();
+    expect(closeSpy).toHaveBeenCalledTimes(1);
   }));
 
   it('should container top to configured', fakeAsync(() => {
@@ -186,7 +205,6 @@ describe('NzMessage', () => {
 });
 
 @Component({
-  selector: 'nz-demo-app-component',
   template: `
     <ng-template #contentTemplate>
       Content in template
@@ -194,5 +212,5 @@ describe('NzMessage', () => {
   `
 })
 export class NzTestMessageBasicComponent {
-  @ViewChild('contentTemplate') template: TemplateRef<void>;
+  @ViewChild('contentTemplate', { static: true }) template: TemplateRef<void>;
 }

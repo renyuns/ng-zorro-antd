@@ -11,19 +11,21 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   QueryList,
   SimpleChanges,
   TemplateRef,
   ViewEncapsulation
 } from '@angular/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { merge, Subject, Subscription } from 'rxjs';
+import { startWith, takeUntil } from 'rxjs/operators';
 
-import { toBoolean, NgClassType, NzSizeDSType } from 'ng-zorro-antd/core';
+import { NgClassType, NzSizeDSType, toBoolean } from 'ng-zorro-antd/core';
 
 import { NzStepComponent } from './nz-step.component';
 
@@ -44,6 +46,7 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
   @Input() nzCurrent = 0;
   @Input() nzDirection: NzDirectionType = 'horizontal';
   @Input() nzLabelPlacement: 'horizontal' | 'vertical' = 'horizontal';
+  @Input() nzType: 'default' | 'navigation' = 'default';
   @Input() nzSize: NzSizeDSType = 'default';
   @Input() nzStartIndex = 0;
   @Input() nzStatus: NzStatusType = 'process';
@@ -58,12 +61,15 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
     }
     this.updateChildrenSteps();
   }
-  showProcessDot = false;
-  customProcessDotTemplate: TemplateRef<{ $implicit: TemplateRef<void>; status: string; index: number }>;
 
-  classMap: NgClassType;
+  @Output() readonly nzIndexChange = new EventEmitter<number>();
 
   private destroy$ = new Subject<void>();
+  private indexChangeSubscription: Subscription;
+
+  showProcessDot = false;
+  customProcessDotTemplate: TemplateRef<{ $implicit: TemplateRef<void>; status: string; index: number }>;
+  classMap: NgClassType;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.nzStartIndex || changes.nzDirection || changes.nzStatus || changes.nzCurrent) {
@@ -82,12 +88,14 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.indexChangeSubscription) {
+      this.indexChangeSubscription.unsubscribe();
+    }
   }
 
   ngAfterContentInit(): void {
-    this.updateChildrenSteps();
     if (this.steps) {
-      this.steps.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.steps.changes.pipe(startWith(null), takeUntil(this.destroy$)).subscribe(() => {
         this.updateChildrenSteps();
       });
     }
@@ -103,6 +111,7 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
           if (this.customProcessDotTemplate) {
             step.customProcessTemplate = this.customProcessDotTemplate;
           }
+          step.clickable = this.nzIndexChange.observers.length > 0;
           step.direction = this.nzDirection;
           step.index = index + this.nzStartIndex;
           step.currentIndex = this.nzCurrent;
@@ -110,6 +119,10 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
           step.markForCheck();
         });
       });
+      if (this.indexChangeSubscription) {
+        this.indexChangeSubscription.unsubscribe();
+      }
+      this.indexChangeSubscription = merge(...this.steps.map(step => step.click$)).subscribe(index => this.nzIndexChange.emit(index));
     }
   }
 
@@ -117,10 +130,10 @@ export class NzStepsComponent implements OnChanges, OnInit, OnDestroy, AfterCont
     this.classMap = {
       [`ant-steps-${this.nzDirection}`]: true,
       [`ant-steps-label-horizontal`]: this.nzDirection === 'horizontal',
-      [`ant-steps-label-vertical`]:
-        (this.showProcessDot || this.nzLabelPlacement === 'vertical') && this.nzDirection === 'horizontal',
+      [`ant-steps-label-vertical`]: (this.showProcessDot || this.nzLabelPlacement === 'vertical') && this.nzDirection === 'horizontal',
       [`ant-steps-dot`]: this.showProcessDot,
-      ['ant-steps-small']: this.nzSize === 'small'
+      ['ant-steps-small']: this.nzSize === 'small',
+      ['ant-steps-navigation']: this.nzType === 'navigation'
     };
   }
 }

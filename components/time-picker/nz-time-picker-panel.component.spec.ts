@@ -1,5 +1,5 @@
 import { Component, DebugElement, NO_ERRORS_SCHEMA, ViewChild, ViewEncapsulation } from '@angular/core';
-import { async, fakeAsync, flush, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { NzI18nModule } from '../i18n/nz-i18n.module';
@@ -57,13 +57,11 @@ describe('time-picker-panel', () => {
       expect(testComponent.nzTimePickerPanelComponent.enabledColumns).toBe(2);
     });
     it('should default open value work', fakeAsync(() => {
-      testComponent.nzTimePickerPanelComponent.opened = true;
+      testComponent.opened = true;
       fixture.detectChanges();
       tick(1000);
       fixture.detectChanges();
-      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll(
-        '.ant-time-picker-panel-select-option-selected'
-      );
+      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select-option-selected');
       expect(listOfSelectedLi[0].innerText).toBe('10');
       expect(listOfSelectedLi[1].innerText).toBe('11');
       expect(listOfSelectedLi[2].innerText).toBe('12');
@@ -86,9 +84,7 @@ describe('time-picker-panel', () => {
       flush();
       fixture.detectChanges();
       flush();
-      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll(
-        '.ant-time-picker-panel-select-option-selected'
-      );
+      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select-option-selected');
       expect(listOfSelectedLi[0].innerText).toBe('08');
       expect(listOfSelectedLi[1].innerText).toBe('09');
       expect(listOfSelectedLi[2].innerText).toBe('10');
@@ -178,9 +174,7 @@ describe('time-picker-panel', () => {
       fixture12Hour.detectChanges();
       tick(1000);
       fixture12Hour.detectChanges();
-      const listOfSelectedLi = panelElement.nativeElement.querySelectorAll(
-        '.ant-time-picker-panel-select-option-selected'
-      );
+      const listOfSelectedLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select-option-selected');
       expect(listOfSelectedLi[0].innerText).toBe('12');
       expect(listOfSelectedLi[1].innerText).toBe('00');
       expect(listOfSelectedLi[2].innerText).toBe('00');
@@ -193,9 +187,7 @@ describe('time-picker-panel', () => {
       fixture12Hour.detectChanges();
       tick(1000);
       fixture12Hour.detectChanges();
-      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll(
-        '.ant-time-picker-panel-select-option-selected'
-      );
+      let listOfSelectedLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select-option-selected');
       expect(listOfSelectedLi[0].innerText).toBe('05');
       expect(listOfSelectedLi[1].innerText).toBe('06');
       expect(listOfSelectedLi[2].innerText).toBe('07');
@@ -252,9 +244,7 @@ describe('time-picker-panel', () => {
     it('format in 12-hour-time-pick-panel', fakeAsync(() => {
       testComponent.format = 'hh:mm:ss A';
       fixture12Hour.detectChanges();
-      const list12HourLi = panelElement.nativeElement
-        .querySelectorAll('.ant-time-picker-panel-select')[3]
-        .querySelectorAll('li');
+      const list12HourLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select')[3].querySelectorAll('li');
       expect(list12HourLi[0].innerText).toBe('AM');
       expect(list12HourLi[1].innerText).toBe('PM');
     }));
@@ -264,18 +254,14 @@ describe('time-picker-panel', () => {
       flush();
       testComponent.disabledHours = (): number[] => [0, 3, 4, 5, 12, 18, 19, 20, 24];
       fixture12Hour.detectChanges();
-      let listHourLi = panelElement.nativeElement
-        .querySelectorAll('.ant-time-picker-panel-select')[0]
-        .querySelectorAll('li');
+      let listHourLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select')[0].querySelectorAll('li');
       expect(listHourLi[0].classList).toContain('ant-time-picker-panel-select-option-disabled');
       expect(listHourLi[3].classList).toContain('ant-time-picker-panel-select-option-disabled');
       expect(listHourLi[4].classList).toContain('ant-time-picker-panel-select-option-disabled');
       expect(listHourLi[5].classList).toContain('ant-time-picker-panel-select-option-disabled');
       testComponent.nzTimePickerPanelComponent.select12Hours({ index: 1, value: 'pm' });
       fixture12Hour.detectChanges();
-      listHourLi = panelElement.nativeElement
-        .querySelectorAll('.ant-time-picker-panel-select')[0]
-        .querySelectorAll('li');
+      listHourLi = panelElement.nativeElement.querySelectorAll('.ant-time-picker-panel-select')[0].querySelectorAll('li');
       expect(listHourLi[0].classList).toContain('ant-time-picker-panel-select-option-disabled');
       expect(listHourLi[6].classList).toContain('ant-time-picker-panel-select-option-disabled');
       expect(listHourLi[7].classList).toContain('ant-time-picker-panel-select-option-disabled');
@@ -285,7 +271,6 @@ describe('time-picker-panel', () => {
 });
 
 @Component({
-  selector: 'nz-test-time-panel',
   encapsulation: ViewEncapsulation.None,
   template: `
     <nz-time-picker-panel
@@ -295,23 +280,24 @@ describe('time-picker-panel', () => {
       [nzSecondStep]="secondStep"
       [nzMinuteStep]="minuteStep"
       [nzHourStep]="hourStep"
+      [opened]="opened"
     >
     </nz-time-picker-panel>
   `,
   styleUrls: ['../style/index.less', './style/index.less']
 })
 export class NzTestTimePanelComponent {
+  opened = false;
   secondStep = 1;
   minuteStep = 1;
   hourStep = 1;
-  @ViewChild(NzTimePickerPanelComponent) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
+  @ViewChild(NzTimePickerPanelComponent, { static: false }) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
   value: Date;
   openValue = new Date(0, 0, 0, 10, 11, 12);
   format: string | null = 'HH:mm:ss';
 }
 
 @Component({
-  selector: 'nz-test-time-panel-disabled',
   encapsulation: ViewEncapsulation.None,
   template: `
     <nz-time-picker-panel
@@ -337,7 +323,7 @@ export class NzTestTimePanelDisabledComponent {
   minuteStep = 1;
   hourStep = 1;
   hideDisabledOptions = false;
-  @ViewChild(NzTimePickerPanelComponent) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
+  @ViewChild(NzTimePickerPanelComponent, { static: false }) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
   value = new Date(0, 0, 0, 0, 0, 0);
   openValue = new Date(0, 0, 0, 10, 11, 12);
   format = 'HH:mm:ss';
@@ -363,7 +349,6 @@ export class NzTestTimePanelDisabledComponent {
   }
 }
 @Component({
-  selector: 'nz-test-12-hour-time-panel',
   encapsulation: ViewEncapsulation.None,
   template: `
     <nz-time-picker-panel
@@ -378,14 +363,13 @@ export class NzTestTimePanelDisabledComponent {
   styleUrls: ['../style/index.less', './style/index.less']
 })
 export class NzTest12HourTimePanelComponent {
-  @ViewChild(NzTimePickerPanelComponent) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
+  @ViewChild(NzTimePickerPanelComponent, { static: false }) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
   format = 'hh:mm:ss a';
   hourStep = 1;
   value: Date;
   openValue = new Date(0, 0, 0, 0, 0, 0);
 }
 @Component({
-  selector: 'nz-test-12-hour-time-panel',
   encapsulation: ViewEncapsulation.None,
   template: `
     <nz-time-picker-panel
@@ -401,7 +385,7 @@ export class NzTest12HourTimePanelComponent {
   styleUrls: ['../style/index.less', './style/index.less']
 })
 export class NzTest12HourTimePanelDisabeledComponent {
-  @ViewChild(NzTimePickerPanelComponent) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
+  @ViewChild(NzTimePickerPanelComponent, { static: false }) nzTimePickerPanelComponent: NzTimePickerPanelComponent;
   format = 'hh:mm:ss a';
   value = new Date(0, 0, 0, 1, 1, 1);
   disabledHours = (): number[] => [];

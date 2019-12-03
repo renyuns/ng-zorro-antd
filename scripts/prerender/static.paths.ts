@@ -34,6 +34,8 @@ export const ROUTES = [
   '/components/comment/zh',
   '/components/date-picker/en',
   '/components/date-picker/zh',
+  '/components/descriptions/en',
+  '/components/descriptions/zh',
   '/components/divider/en',
   '/components/divider/zh',
   '/components/drawer/en',
@@ -112,6 +114,8 @@ export const ROUTES = [
   '/components/tree-select/zh',
   '/components/tree/en',
   '/components/tree/zh',
+  '/components/typography/en',
+  '/components/typography/zh',
   '/components/upload/en',
   '/components/upload/zh',
   '/doc/introduce/en',
@@ -124,6 +128,8 @@ export const ROUTES = [
   '/docs/contributing/zh',
   '/docs/customize-theme/en',
   '/docs/customize-theme/zh',
+  '/docs/experimental/zh',
+  '/docs/experimental/en',
   '/docs/faq/en',
   '/docs/faq/zh',
   '/docs/getting-started/en',
@@ -137,5 +143,7 @@ export const ROUTES = [
   '/docs/schematics/en',
   '/docs/schematics/zh',
   '/docs/universal/en',
-  '/docs/universal/zh'
+  '/docs/universal/zh',
+  '/experimental/resizable/zh',
+  '/experimental/resizable/en'
 ];

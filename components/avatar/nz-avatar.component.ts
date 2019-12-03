@@ -12,22 +12,19 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
+  Output,
   Renderer2,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
 
-import { NzSizeLDSType, NzSizeMap, NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import { NzConfigService, NzShapeSCType, NzSizeLDSType, NzSizeMap, NzUpdateHostClassService, WithConfig } from 'ng-zorro-antd/core';
 
-export type NzAvatarShape = 'square' | 'circle';
-export type NzAvatarSize = NzSizeLDSType | number;
-
-export interface NzAvatarSizeMap {
-  [size: string]: string;
-}
+const NZ_CONFIG_COMPONENT_NAME = 'avatar';
 
 @Component({
   selector: 'nz-avatar',
@@ -39,11 +36,14 @@ export interface NzAvatarSizeMap {
   encapsulation: ViewEncapsulation.None
 })
 export class NzAvatarComponent implements OnChanges {
-  @Input() nzShape: NzAvatarShape = 'circle';
-  @Input() nzSize: NzAvatarSize = 'default';
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'circle') nzShape: NzShapeSCType;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'default') nzSize: NzSizeLDSType | number;
   @Input() nzText: string;
   @Input() nzSrc: string;
+  @Input() nzSrcSet: string;
+  @Input() nzAlt: string;
   @Input() nzIcon: string;
+  @Output() readonly nzError = new EventEmitter<Event>();
 
   oldAPIIcon = true; // Make the user defined icon compatible to old API. Should be removed in 2.0.
   hasText: boolean = false;
@@ -51,13 +51,14 @@ export class NzAvatarComponent implements OnChanges {
   hasIcon: boolean = false;
   textStyles: {};
 
-  @ViewChild('textEl') textEl: ElementRef;
+  @ViewChild('textEl', { static: false }) textEl: ElementRef;
 
   private el: HTMLElement = this.elementRef.nativeElement;
   private prefixCls = 'ant-avatar';
   private sizeMap: NzSizeMap = { large: 'lg', small: 'sm' };
 
   constructor(
+    public nzConfigService: NzConfigService,
     private elementRef: ElementRef,
     private cd: ChangeDetectorRef,
     private updateHostClassService: NzUpdateHostClassService,
@@ -78,17 +79,20 @@ export class NzAvatarComponent implements OnChanges {
     return this;
   }
 
-  imgError(): void {
-    this.hasSrc = false;
-    this.hasIcon = false;
-    this.hasText = false;
-    if (this.nzIcon) {
-      this.hasIcon = true;
-    } else if (this.nzText) {
-      this.hasText = true;
+  imgError($event: Event): void {
+    this.nzError.emit($event);
+    if (!$event.defaultPrevented) {
+      this.hasSrc = false;
+      this.hasIcon = false;
+      this.hasText = false;
+      if (this.nzIcon) {
+        this.hasIcon = true;
+      } else if (this.nzText) {
+        this.hasText = true;
+      }
+      this.setClass().notifyCalc();
+      this.setSizeStyle();
     }
-    this.setClass().notifyCalc();
-    this.setSizeStyle();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -133,14 +137,12 @@ export class NzAvatarComponent implements OnChanges {
   }
 
   private setSizeStyle(): void {
-    if (typeof this.nzSize === 'string') {
-      return;
-    }
-    this.renderer.setStyle(this.el, 'width', `${this.nzSize}px`);
-    this.renderer.setStyle(this.el, 'height', `${this.nzSize}px`);
-    this.renderer.setStyle(this.el, 'line-height', `${this.nzSize}px`);
+    const size = typeof this.nzSize === 'string' ? this.nzSize : `${this.nzSize}px`;
+    this.renderer.setStyle(this.el, 'width', size);
+    this.renderer.setStyle(this.el, 'height', size);
+    this.renderer.setStyle(this.el, 'line-height', size);
     if (this.hasIcon) {
-      this.renderer.setStyle(this.el, 'font-size', `${this.nzSize / 2}px`);
+      this.renderer.setStyle(this.el, 'font-size', `calc(${size} / 2)`);
     }
   }
 }

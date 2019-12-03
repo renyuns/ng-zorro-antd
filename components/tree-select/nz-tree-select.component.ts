@@ -9,12 +9,12 @@
 import { BACKSPACE } from '@angular/cdk/keycodes';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedOverlayPositionChange } from '@angular/cdk/overlay';
 import {
-  forwardRef,
   ChangeDetectorRef,
   Component,
   ContentChild,
   ElementRef,
   EventEmitter,
+  forwardRef,
   Host,
   Injector,
   Input,
@@ -35,10 +35,9 @@ import { merge, of as observableOf, Subscription } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 import {
-  isNotNil,
-  slideMotion,
-  zoomMotion,
   InputBoolean,
+  isNotNil,
+  NzConfigService,
   NzFormatEmitEvent,
   NzNoAnimationDirective,
   NzSizeLDSType,
@@ -46,7 +45,11 @@ import {
   NzTreeBaseService,
   NzTreeHigherOrderServiceToken,
   NzTreeNode,
-  NzTreeNodeOptions
+  NzTreeNodeOptions,
+  slideMotion,
+  warnDeprecation,
+  WithConfig,
+  zoomMotion
 } from 'ng-zorro-antd/core';
 import { NzTreeComponent } from 'ng-zorro-antd/tree';
 
@@ -55,6 +58,8 @@ import { NzTreeSelectService } from './nz-tree-select.service';
 export function higherOrderServiceFactory(injector: Injector): NzTreeBaseService {
   return injector.get(NzTreeSelectService);
 }
+
+const NZ_CONFIG_COMPONENT_NAME = 'treeSelect';
 
 @Component({
   selector: 'nz-tree-select',
@@ -98,25 +103,46 @@ export function higherOrderServiceFactory(injector: Injector): NzTreeBaseService
   ]
 })
 export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAccessor, OnInit, OnDestroy, OnChanges {
-  @Input() @InputBoolean() nzAllowClear = true;
-  @Input() @InputBoolean() nzShowExpand = true;
-  @Input() @InputBoolean() nzShowLine = false;
-  @Input() @InputBoolean() nzDropdownMatchSelectWidth = true;
-  @Input() @InputBoolean() nzCheckable = false;
-  @Input() @InputBoolean() nzShowIcon = false;
-  @Input() @InputBoolean() nzShowSearch = false;
+  @Input() @InputBoolean() nzAllowClear: boolean = true;
+  @Input() @InputBoolean() nzShowExpand: boolean = true;
+  @Input() @InputBoolean() nzShowLine: boolean = false;
+  @Input() @InputBoolean() @WithConfig(NZ_CONFIG_COMPONENT_NAME, true) nzDropdownMatchSelectWidth: boolean;
+  @Input() @InputBoolean() nzCheckable: boolean = false;
+  @Input() @InputBoolean() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) nzHideUnMatched: boolean;
+  @Input() @InputBoolean() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) nzShowIcon: boolean;
+  @Input() @InputBoolean() nzShowSearch: boolean = false;
   @Input() @InputBoolean() nzDisabled = false;
   @Input() @InputBoolean() nzAsyncData = false;
   @Input() @InputBoolean() nzMultiple = false;
   @Input() @InputBoolean() nzDefaultExpandAll = false;
+  @Input() @InputBoolean() nzCheckStrictly = false;
   @Input() nzExpandedIcon: TemplateRef<{ $implicit: NzTreeNode }>;
   @Input() nzNotFoundContent: string;
   @Input() nzNodes: Array<NzTreeNode | NzTreeNodeOptions> = [];
   @Input() nzOpen = false;
-  @Input() nzSize: NzSizeLDSType = 'default';
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'default') nzSize: NzSizeLDSType;
   @Input() nzPlaceHolder = '';
   @Input() nzDropdownStyle: { [key: string]: string };
-  @Input() nzDefaultExpandedKeys: string[] = [];
+  /**
+   * @deprecated 9.0.0 - use `nzExpandedKeys` instead.
+   */
+  @Input()
+  set nzDefaultExpandedKeys(value: string[]) {
+    warnDeprecation(`'nzDefaultExpandedKeys' would be removed in 9.0.0. Please use 'nzExpandedKeys' instead.`);
+    this.expandedKeys = value;
+  }
+  get nzDefaultExpandedKeys(): string[] {
+    return this.expandedKeys;
+  }
+
+  @Input()
+  set nzExpandedKeys(value: string[]) {
+    this.expandedKeys = value;
+  }
+  get nzExpandedKeys(): string[] {
+    return this.expandedKeys;
+  }
+
   @Input() nzDisplayWith: (node: NzTreeNode) => string | undefined = (node: NzTreeNode) => node.title;
   @Input() nzMaxTagCount: number;
   @Input() nzMaxTagPlaceholder: TemplateRef<{ $implicit: NzTreeNode[] }>;
@@ -127,12 +153,16 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
   @Output() readonly nzTreeClick = new EventEmitter<NzFormatEmitEvent>();
   @Output() readonly nzTreeCheckBoxChange = new EventEmitter<NzFormatEmitEvent>();
 
-  @ViewChild('inputElement') inputElement: ElementRef;
-  @ViewChild('treeRef') treeRef: NzTreeComponent;
-  @ViewChild(CdkOverlayOrigin) cdkOverlayOrigin: CdkOverlayOrigin;
-  @ViewChild(CdkConnectedOverlay) cdkConnectedOverlay: CdkConnectedOverlay;
+  @ViewChild('inputElement', { static: false }) inputElement: ElementRef<HTMLInputElement>;
+  @ViewChild('treeRef', { static: false }) treeRef: NzTreeComponent;
+  @ViewChild(CdkOverlayOrigin, { static: true }) cdkOverlayOrigin: CdkOverlayOrigin;
+  @ViewChild(CdkConnectedOverlay, { static: false }) cdkConnectedOverlay: CdkConnectedOverlay;
 
-  @Input() @ContentChild('nzTreeTemplate') nzTreeTemplate: TemplateRef<{ $implicit: NzTreeNode }>;
+  @Input() nzTreeTemplate: TemplateRef<{ $implicit: NzTreeNode }>;
+  @ContentChild('nzTreeTemplate', { static: true }) nzTreeTemplateChild: TemplateRef<{ $implicit: NzTreeNode }>;
+  get treeTemplate(): TemplateRef<{ $implicit: NzTreeNode }> {
+    return this.nzTreeTemplate || this.nzTreeTemplateChild;
+  }
 
   triggerWidth: number;
   isComposing = false;
@@ -142,6 +172,7 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
   dropDownPosition: 'top' | 'center' | 'bottom' = 'bottom';
   selectionChangeSubscription: Subscription;
   selectedNodes: NzTreeNode[] = [];
+  expandedKeys: string[] = [];
   value: string[] = [];
 
   onChange: (value: string[] | string | null) => void;
@@ -182,6 +213,7 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
 
   constructor(
     nzTreeService: NzTreeSelectService,
+    public nzConfigService: NzConfigService,
     private renderer: Renderer2,
     private cdr: ChangeDetectorRef,
     private elementRef: ElementRef,
@@ -284,7 +316,7 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
 
   onExpandedKeysChange(value: NzFormatEmitEvent): void {
     this.nzExpandChange.emit(value);
-    this.nzDefaultExpandedKeys = [...value.keys!];
+    this.expandedKeys = [...value.keys!];
   }
 
   setInputValue(value: string): void {
@@ -327,7 +359,10 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
           const node = event.node!;
           if (this.nzCheckable && !node.isDisabled && !node.isDisableCheckbox) {
             node.isChecked = !node.isChecked;
-            this.nzTreeService.conduct(node);
+            node.isHalfChecked = false;
+            if (!this.nzCheckStrictly) {
+              this.nzTreeService.conduct(node);
+            }
           }
           if (this.nzCheckable) {
             node.isSelected = false;
@@ -335,7 +370,7 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
         }),
         filter((event: NzFormatEmitEvent) => {
           const node = event.node!;
-          return this.nzCheckable ? !node.isDisabled && !node.isDisableCheckbox : !node.isDisabled;
+          return this.nzCheckable ? !node.isDisabled && !node.isDisableCheckbox : !node.isDisabled && node.isSelectable;
         })
       ),
       this.nzCheckable ? this.nzTreeCheckBoxChange : observableOf(),
@@ -364,13 +399,15 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
     if (init) {
       const nodes = this.coerceTreeNodes(this.nzNodes);
       this.nzTreeService.isMultiple = this.isMultiple;
+      this.nzTreeService.isCheckStrictly = this.nzCheckStrictly;
       this.nzTreeService.initTree(nodes);
       if (this.nzCheckable) {
-        this.nzTreeService.calcCheckedKeys(this.value, nodes);
+        this.nzTreeService.calcCheckedKeys(this.value, nodes, this.nzCheckStrictly);
       } else {
         this.nzTreeService.calcSelectedKeys(this.value, nodes, this.isMultiple);
       }
     }
+
     this.selectedNodes = [...(this.nzCheckable ? this.getCheckedNodeList() : this.getSelectedNodeList())];
   }
 
@@ -389,11 +426,7 @@ export class NzTreeSelectComponent extends NzTreeBase implements ControlValueAcc
   updateInputWidth(): void {
     if (this.isMultiple && this.inputElement) {
       if (this.inputValue || this.isComposing) {
-        this.renderer.setStyle(
-          this.inputElement.nativeElement,
-          'width',
-          `${this.inputElement.nativeElement.scrollWidth}px`
-        );
+        this.renderer.setStyle(this.inputElement.nativeElement, 'width', `${this.inputElement.nativeElement.scrollWidth}px`);
       } else {
         this.renderer.removeStyle(this.inputElement.nativeElement, 'width');
       }

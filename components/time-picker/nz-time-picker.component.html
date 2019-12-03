@@ -1,20 +1,21 @@
 <input
-  type="text"
+  #inputElement
+  nzType="text"
   [nzTime]="nzFormat"
   class="ant-time-picker-input"
   [placeholder]="nzPlaceHolder || ('TimePicker.placeholder' | nzI18n)"
   [(ngModel)]="value"
   readonly="readonly"
   (click)="open()"
-  #inputElement>
+/>
 <span class="ant-time-picker-icon">
-  <i nz-icon type="clock-circle"></i>
+  <i nz-icon nzType="clock-circle"></i>
 </span>
 <i
   *ngIf="nzAllowEmpty && value"
   nz-icon
-  type="close-circle"
-  theme="fill"
+  nzType="close-circle"
+  nzTheme="fill"
   class="anticon anticon-close-circle ant-time-picker-clear"
   tabindex="-1"
   [attr.aria-label]="nzClearText"
@@ -31,7 +32,8 @@
   [cdkConnectedOverlayOpen]="nzOpen"
   [cdkConnectedOverlayOffsetY]="-2"
   (detach)="close()"
-  (backdropClick)="close()">
+  (backdropClick)="close()"
+>
   <nz-time-picker-panel
     [ngClass]="nzPopupClassName"
     [@slideMotion]="'bottom'"
@@ -50,7 +52,7 @@
     [opened]="nzOpen"
     [nzClearText]="nzClearText"
     [nzAllowEmpty]="nzAllowEmpty"
-    [(ngModel)]="value">
+    [(ngModel)]="value"
+  >
   </nz-time-picker-panel>
 </ng-template>
-

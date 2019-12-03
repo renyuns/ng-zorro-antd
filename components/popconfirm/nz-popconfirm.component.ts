@@ -10,17 +10,16 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Host,
-  Input,
+  OnDestroy,
   Optional,
-  Output,
   TemplateRef,
   ViewEncapsulation
 } from '@angular/core';
 
-import { zoomBigMotion, InputBoolean, NzNoAnimationDirective } from 'ng-zorro-antd/core';
-import { NzToolTipComponent } from 'ng-zorro-antd/tooltip';
+import { NzNoAnimationDirective, zoomBigMotion } from 'ng-zorro-antd/core';
+import { NzToolTipComponent, NzTooltipTrigger } from 'ng-zorro-antd/tooltip';
+import { Subject } from 'rxjs';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,39 +37,47 @@ import { NzToolTipComponent } from 'ng-zorro-antd/tooltip';
     `
   ]
 })
-export class NzPopconfirmComponent extends NzToolTipComponent {
+export class NzPopconfirmComponent extends NzToolTipComponent implements OnDestroy {
+  nzCancelText: string;
+  nzCondition = false;
+  nzIcon: string | TemplateRef<void>;
+  nzOkText: string;
+  nzOkType: string = 'primary';
+
+  readonly nzOnCancel = new Subject<void>();
+  readonly nzOnConfirm = new Subject<void>();
+
+  protected _trigger: NzTooltipTrigger = 'click';
+
   _prefix = 'ant-popover-placement';
-  _trigger = 'click';
   _hasBackdrop = true;
-
-  @Input() nzOkText: string;
-  @Input() nzOkType: string = 'primary';
-  @Input() nzCancelText: string;
-  @Input() @InputBoolean() nzCondition = false;
-  @Input() nzIcon: string | TemplateRef<void>;
-
-  @Output() readonly nzOnCancel: EventEmitter<void> = new EventEmitter();
-  @Output() readonly nzOnConfirm: EventEmitter<void> = new EventEmitter();
 
   constructor(cdr: ChangeDetectorRef, @Host() @Optional() public noAnimation?: NzNoAnimationDirective) {
     super(cdr, noAnimation);
   }
 
+  ngOnDestroy(): void {
+    super.ngOnDestroy();
+
+    this.nzOnCancel.complete();
+    this.nzOnConfirm.complete();
+  }
+
   show(): void {
     if (!this.nzCondition) {
-      this.nzVisible = true;
+      super.show();
     } else {
       this.onConfirm();
     }
   }
 
   onCancel(): void {
-    this.nzOnCancel.emit();
-    this.nzVisible = false;
+    this.nzOnCancel.next();
+    super.hide();
   }
 
   onConfirm(): void {
-    this.nzOnConfirm.emit();
-    this.nzVisible = false;
+    this.nzOnConfirm.next();
+    super.hide();
   }
 }

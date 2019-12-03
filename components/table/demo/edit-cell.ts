@@ -1,5 +1,12 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { NzInputDirective } from 'ng-zorro-antd';
+import { NzInputDirective } from 'ng-zorro-antd/input';
+
+interface ItemData {
+  id: string;
+  name: string;
+  age: string;
+  address: string;
+}
 
 @Component({
   selector: 'nz-demo-table-edit-cell',
@@ -61,8 +68,8 @@ import { NzInputDirective } from 'ng-zorro-antd';
 export class NzDemoTableEditCellComponent implements OnInit {
   i = 0;
   editId: string | null;
-  listOfData: any[] = [];
-  @ViewChild(NzInputDirective, { read: ElementRef }) inputElement: ElementRef;
+  listOfData: ItemData[] = [];
+  @ViewChild(NzInputDirective, { static: false, read: ElementRef }) inputElement: ElementRef;
 
   @HostListener('window:click', ['$event'])
   handleClick(e: MouseEvent): void {

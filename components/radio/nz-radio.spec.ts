@@ -1,6 +1,6 @@
 import { Component, DebugElement, OnInit, ViewChild } from '@angular/core';
-import { fakeAsync, flush, tick, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { NzRadioButtonComponent } from './nz-radio-button.component';
@@ -305,20 +305,14 @@ describe('radio', () => {
 });
 
 @Component({
-  selector: 'nz-test-radio-single',
   template: `
-    <label
-      nz-radio
-      [(ngModel)]="value"
-      (ngModelChange)="modelChange($event)"
-      [nzDisabled]="disabled"
-      [nzAutoFocus]="autoFocus"
+    <label nz-radio [(ngModel)]="value" (ngModelChange)="modelChange($event)" [nzDisabled]="disabled" [nzAutoFocus]="autoFocus"
       >Radio</label
     >
   `
 })
 export class NzTestRadioSingleComponent {
-  @ViewChild(NzRadioComponent) nzRadioComponent: NzRadioComponent;
+  @ViewChild(NzRadioComponent, { static: false }) nzRadioComponent: NzRadioComponent;
   value = false;
   autoFocus = false;
   disabled = false;
@@ -326,7 +320,6 @@ export class NzTestRadioSingleComponent {
 }
 
 @Component({
-  selector: 'nz-test-radio-button',
   template: `
     <label nz-radio-button>Radio</label>
   `
@@ -334,15 +327,8 @@ export class NzTestRadioSingleComponent {
 export class NzTestRadioButtonComponent {}
 
 @Component({
-  selector: 'nz-test-radio-group',
   template: `
-    <nz-radio-group
-      [(ngModel)]="value"
-      [nzName]="name"
-      [nzDisabled]="disabled"
-      (ngModelChange)="modelChange($event)"
-      [nzSize]="size"
-    >
+    <nz-radio-group [(ngModel)]="value" [nzName]="name" [nzDisabled]="disabled" (ngModelChange)="modelChange($event)" [nzSize]="size">
       <ng-container [ngClass]>
         <label nz-radio-button nzValue="A">A</label>
         <label nz-radio-button nzValue="B">B</label>
@@ -361,7 +347,6 @@ export class NzTestRadioGroupComponent {
 }
 
 @Component({
-  selector: 'nz-test-radio-form',
   template: `
     <form [formGroup]="formGroup">
       <label nz-radio formControlName="radio"></label>
@@ -383,7 +368,6 @@ export class NzTestRadioFormComponent {
 }
 
 @Component({
-  selector: 'nz-test-radio-group-form',
   template: `
     <form [formGroup]="formGroup">
       <nz-radio-group formControlName="radioGroup">
@@ -413,7 +397,6 @@ export class NzTestRadioGroupFormComponent {
 /** https://github.com/NG-ZORRO/ng-zorro-antd/issues/1734 **/
 
 @Component({
-  selector: 'nz-test-radio-group-disabled',
   template: `
     <nz-radio-group [(ngModel)]="value" [nzName]="name" [nzDisabled]="disabled" [nzSize]="size">
       <label nz-radio-button nzValue="A">A</label>
@@ -433,7 +416,6 @@ export class NzTestRadioGroupDisabledComponent {
 
 /** https://github.com/NG-ZORRO/ng-zorro-antd/issues/1735 **/
 @Component({
-  selector: 'nz-test-radio-group-disabled-form',
   template: `
     <form nz-form [formGroup]="validateForm">
       <nz-radio-group formControlName="radio">
@@ -456,7 +438,6 @@ export class NzTestRadioGroupDisabledFormComponent implements OnInit {
 }
 
 @Component({
-  selector: 'nz-test-radui-group-solid',
   template: `
     <nz-radio-group [(ngModel)]="value" [nzButtonStyle]="'solid'">
       <label nz-radio-button nzValue="A">A</label>

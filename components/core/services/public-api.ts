@@ -6,5 +6,10 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-export * from './nz-measure-scrollbar.service';
 export * from './update-host-class.service';
+export * from './nz-copy-to-clipboard.service';
+export * from './nz-copy-to-clipboard.service.module';
+export * from './nz-dom-event.service';
+export * from './nz-singleton.service';
+
+export * from './drag/public-api';

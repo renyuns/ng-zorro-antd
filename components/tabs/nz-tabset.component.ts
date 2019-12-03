@@ -22,6 +22,7 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
+  Optional,
   Output,
   QueryList,
   Renderer2,
@@ -30,9 +31,20 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { merge, Subscription } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterLinkWithHref } from '@angular/router';
+import { merge, Subject, Subscription } from 'rxjs';
 
-import { toNumber, NzSizeLDSType, NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import {
+  InputBoolean,
+  NzConfigService,
+  NzFourDirectionType,
+  NzSizeLDSType,
+  NzUpdateHostClassService,
+  PREFIX,
+  toNumber,
+  WithConfig
+} from 'ng-zorro-antd/core';
+import { filter, startWith, takeUntil } from 'rxjs/operators';
 
 import { NzTabComponent } from './nz-tab.component';
 import { NzTabsNavComponent } from './nz-tabs-nav.component';
@@ -47,9 +59,11 @@ export class NzTabChangeEvent {
   tab: NzTabComponent;
 }
 
-export type NzTabPosition = 'top' | 'bottom' | 'left' | 'right';
+export type NzTabPosition = NzFourDirectionType;
 export type NzTabPositionMode = 'horizontal' | 'vertical';
 export type NzTabType = 'line' | 'card';
+
+const NZ_CONFIG_COMPONENT_NAME = 'tabs';
 
 @Component({
   selector: 'nz-tabset',
@@ -67,8 +81,7 @@ export type NzTabType = 'line' | 'card';
     `
   ]
 })
-export class NzTabSetComponent
-  implements AfterContentChecked, OnInit, AfterViewInit, OnChanges, AfterContentInit, OnDestroy {
+export class NzTabSetComponent implements AfterContentChecked, OnInit, AfterViewInit, OnChanges, AfterContentInit, OnDestroy {
   private indexToSelect: number | null = 0;
   private el: HTMLElement = this.elementRef.nativeElement;
   private _selectedIndex: number | null = null;
@@ -76,19 +89,27 @@ export class NzTabSetComponent
   private tabsSubscription = Subscription.EMPTY;
   /** Subscription to changes in the tab labels. */
   private tabLabelSubscription = Subscription.EMPTY;
+
+  private destroy$ = new Subject<void>();
+
   tabPositionMode: NzTabPositionMode = 'horizontal';
   @ContentChildren(NzTabComponent) listOfNzTabComponent: QueryList<NzTabComponent>;
-  @ViewChild(NzTabsNavComponent) nzTabsNavComponent: NzTabsNavComponent;
-  @ViewChild('tabContent') tabContent: ElementRef;
+  @ViewChild(NzTabsNavComponent, { static: false }) nzTabsNavComponent: NzTabsNavComponent;
+  @ViewChild('tabContent', { static: false }) tabContent: ElementRef;
+
   @Input() nzTabBarExtraContent: TemplateRef<void>;
-  @Input() nzShowPagination = true;
-  @Input() nzAnimated: NzAnimatedInterface | boolean = true;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, true) nzShowPagination: boolean;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, true) nzAnimated: NzAnimatedInterface | boolean;
   @Input() nzHideAll = false;
   @Input() nzTabPosition: NzTabPosition = 'top';
-  @Input() nzSize: NzSizeLDSType = 'default';
-  @Input() nzTabBarGutter: number;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'default') nzSize: NzSizeLDSType;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME) nzTabBarGutter: number;
   @Input() nzTabBarStyle: { [key: string]: string };
-  @Input() nzType: NzTabType = 'line';
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'line') nzType: NzTabType;
+
+  @Input() @InputBoolean() nzLinkRouter = false;
+  @Input() @InputBoolean() nzLinkExact = true;
+
   @Output() readonly nzOnNextClick = new EventEmitter<void>();
   @Output() readonly nzOnPrevClick = new EventEmitter<void>();
   @Output() readonly nzSelectChange: EventEmitter<NzTabChangeEvent> = new EventEmitter<NzTabChangeEvent>(true);
@@ -114,17 +135,9 @@ export class NzTabSetComponent
   setPosition(value: NzTabPosition): void {
     if (this.tabContent) {
       if (value === 'bottom') {
-        this.renderer.insertBefore(
-          this.el,
-          this.tabContent.nativeElement,
-          this.nzTabsNavComponent.elementRef.nativeElement
-        );
+        this.renderer.insertBefore(this.el, this.tabContent.nativeElement, this.nzTabsNavComponent.elementRef.nativeElement);
       } else {
-        this.renderer.insertBefore(
-          this.el,
-          this.nzTabsNavComponent.elementRef.nativeElement,
-          this.tabContent.nativeElement
-        );
+        this.renderer.insertBefore(this.el, this.nzTabsNavComponent.elementRef.nativeElement, this.tabContent.nativeElement);
       }
     }
   }
@@ -134,8 +147,7 @@ export class NzTabSetComponent
       [`ant-tabs`]: true,
       [`ant-tabs-vertical`]: this.nzTabPosition === 'left' || this.nzTabPosition === 'right',
       [`ant-tabs-${this.nzTabPosition}`]: this.nzTabPosition,
-      [`ant-tabs-no-animation`]:
-        this.nzAnimated === false || (this.nzAnimated as NzAnimatedInterface).tabPane === false,
+      [`ant-tabs-no-animation`]: this.nzAnimated === false || (this.nzAnimated as NzAnimatedInterface).tabPane === false,
       [`ant-tabs-${this.nzType}`]: this.nzType,
       [`ant-tabs-large`]: this.nzSize === 'large',
       [`ant-tabs-small`]: this.nzSize === 'small'
@@ -144,8 +156,9 @@ export class NzTabSetComponent
 
   clickLabel(index: number, disabled: boolean): void {
     if (!disabled) {
+      const tabs = this.listOfNzTabComponent.toArray();
       this.nzSelectedIndex = index;
-      this.listOfNzTabComponent.toArray()[index].nzClick.emit();
+      tabs[index].nzClick.emit();
     }
   }
 
@@ -176,16 +189,16 @@ export class NzTabSetComponent
     if (this.tabLabelSubscription) {
       this.tabLabelSubscription.unsubscribe();
     }
-    this.tabLabelSubscription = merge(...this.listOfNzTabComponent.map(tab => tab.stateChanges)).subscribe(() =>
-      this.cdr.markForCheck()
-    );
+    this.tabLabelSubscription = merge(...this.listOfNzTabComponent.map(tab => tab.stateChanges)).subscribe(() => this.cdr.markForCheck());
   }
 
   constructor(
+    public nzConfigService: NzConfigService,
     private renderer: Renderer2,
     private nzUpdateHostClassService: NzUpdateHostClassService,
     private elementRef: ElementRef,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Optional() private router: Router
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -285,9 +298,53 @@ export class NzTabSetComponent
   ngOnDestroy(): void {
     this.tabsSubscription.unsubscribe();
     this.tabLabelSubscription.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {
     this.setPosition(this.nzTabPosition);
+
+    if (this.nzLinkRouter) {
+      if (!this.router) {
+        throw new Error(`${PREFIX} you should import 'RouterModule' if you want to use 'nzLinkRouter'!`);
+      }
+
+      this.router.events
+        .pipe(
+          takeUntil(this.destroy$),
+          filter(e => e instanceof NavigationEnd),
+          startWith(true)
+        )
+        .subscribe(() => {
+          this.updateRouterActive();
+          this.cdr.markForCheck();
+        });
+    }
+  }
+
+  private updateRouterActive(): void {
+    if (this.router.navigated) {
+      const index = this.findShouldActiveTabIndex();
+      if (index !== this._selectedIndex) {
+        this.nzSelectedIndex = index;
+        this.nzSelectedIndexChange.emit(index);
+      }
+      this.nzHideAll = index === -1;
+    }
+  }
+
+  private findShouldActiveTabIndex(): number {
+    const tabs = this.listOfNzTabComponent.toArray();
+    const isActive = this.isLinkActive(this.router);
+
+    return tabs.findIndex(tab => {
+      const c = tab.linkDirective;
+      return c ? isActive(c.routerLink) || isActive(c.routerLinkWithHref) : false;
+    });
+  }
+
+  private isLinkActive(router: Router): (link?: RouterLink | RouterLinkWithHref) => boolean {
+    return (link?: RouterLink | RouterLinkWithHref) => (link ? router.isActive(link.urlTree, this.nzLinkExact) : false);
   }
 }

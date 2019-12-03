@@ -8,22 +8,20 @@ import { Component } from '@angular/core';
         <tr>
           <th nzCustomFilter>
             Name
-            <nz-dropdown nzTrigger="click" nzPlacement="bottomRight" [nzClickHide]="false" nzTableFilter #dropdown>
-              <i
-                nz-icon
-                nzType="search"
-                class="ant-table-filter-icon"
-                [class.ant-table-filter-open]="dropdown.nzVisible"
-                nz-dropdown
-              ></i>
-              <div class="search-box">
-                <input type="text" nz-input placeholder="Search name" [(ngModel)]="searchValue" />
-                <button nz-button nzSize="small" nzType="primary" (click)="search()" class="search-button">
-                  Search
-                </button>
-                <button nz-button nzSize="small" (click)="reset()">Reset</button>
-              </div>
-            </nz-dropdown>
+            <i
+              nz-th-extra
+              class="ant-table-filter-icon"
+              nz-icon
+              nz-dropdown
+              #dropdown="nzDropdown"
+              nzType="search"
+              [nzDropdownMenu]="menu"
+              [class.ant-table-filter-open]="dropdown.nzVisible"
+              nzTrigger="click"
+              nzPlacement="bottomRight"
+              [nzClickHide]="false"
+              nzTableFilter
+            ></i>
           </th>
           <th>Age</th>
           <th nzShowFilter [nzFilters]="listOfFilterAddress" (nzFilterChange)="filterAddressChange($event)">Address</th>
@@ -37,6 +35,15 @@ import { Component } from '@angular/core';
         </tr>
       </tbody>
     </nz-table>
+    <nz-dropdown-menu #menu="nzDropdownMenu">
+      <div class="search-box">
+        <input type="text" nz-input placeholder="Search name" [(ngModel)]="searchValue" />
+        <button nz-button nzSize="small" nzType="primary" (click)="search()" class="search-button">
+          Search
+        </button>
+        <button nz-button nzSize="small" (click)="reset()">Reset</button>
+      </div>
+    </nz-dropdown-menu>
   `,
   styles: [
     `
@@ -64,7 +71,10 @@ export class NzDemoTableCustomFilterPanelComponent {
   searchValue = '';
   sortName: string | null = null;
   sortValue: string | null = null;
-  listOfFilterAddress = [{ text: 'London', value: 'London' }, { text: 'Sidney', value: 'Sidney' }];
+  listOfFilterAddress = [
+    { text: 'London', value: 'London' },
+    { text: 'Sidney', value: 'Sidney' }
+  ];
   listOfSearchAddress: string[] = [];
   listOfData: Array<{ name: string; age: number; address: string; [key: string]: string | number }> = [
     {
@@ -109,20 +119,13 @@ export class NzDemoTableCustomFilterPanelComponent {
   search(): void {
     const filterFunc = (item: { name: string; age: number; address: string }) => {
       return (
-        (this.listOfSearchAddress.length
-          ? this.listOfSearchAddress.some(address => item.address.indexOf(address) !== -1)
-          : true) && item.name.indexOf(this.searchValue) !== -1
+        (this.listOfSearchAddress.length ? this.listOfSearchAddress.some(address => item.address.indexOf(address) !== -1) : true) &&
+        item.name.indexOf(this.searchValue) !== -1
       );
     };
     const data = this.listOfData.filter((item: { name: string; age: number; address: string }) => filterFunc(item));
     this.listOfDisplayData = data.sort((a, b) =>
-      this.sortValue === 'ascend'
-        ? a[this.sortName!] > b[this.sortName!]
-          ? 1
-          : -1
-        : b[this.sortName!] > a[this.sortName!]
-        ? 1
-        : -1
+      this.sortValue === 'ascend' ? (a[this.sortName!] > b[this.sortName!] ? 1 : -1) : b[this.sortName!] > a[this.sortName!] ? 1 : -1
     );
   }
 }

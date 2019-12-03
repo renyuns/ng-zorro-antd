@@ -16,33 +16,15 @@ subtitle: 通知提醒框
 - 带有交互的通知，给出用户下一步的行动点。
 - 系统主动推送。
 
-## 如何使用
-
-与`NzMessage`类似，如果要修改全局默认配置，你可以设置提供商 `NZ_NOTIFICATION_CONFIG` 的值来修改。
-（如：在你的模块的`providers`中加入 `{ provide: NZ_NOTIFICATION_CONFIG, useValue: { nzDuration: 3000 }}`，`NZ_NOTIFICATION_CONFIG` 可以从 `ng-zorro-antd` 中导入）
-
-默认全局配置为：
-```js
-{
-  nzTop         : '24px',
-  nzBottom      : '24px',
-  nzPlacement   : 'topRight',
-  nzDuration    : 4500,
-  nzMaxStack    : 7,
-  nzPauseOnHover: true,
-  nzAnimate     : true
- }
-```
-
-## API
-
-### 单独引入此组件
+## 单独引入此组件
 
 想要了解更多关于单独引入组件的内容，可以在[快速上手](/docs/getting-started/zh#单独引入某个组件)页面进行查看。
 
 ```ts
-import { NzNotificationModule } from 'ng-zorro-antd';
+import { NzNotificationModule } from 'ng-zorro-antd/notification';
 ```
+
+## API
 
 ### NzNotificationService
 
@@ -77,7 +59,9 @@ import { NzNotificationModule } from 'ng-zorro-antd';
 
 - `NzNotificationService.remove(id)` // 移除特定id的消息，当id为空时，移除所有消息（该消息id通过上述方法返回值中得到）
 
-### 全局配置（NZ_MESSAGE_CONFIG）
+### 全局配置
+
+可以通过 `NzConfigService` 进行全局配置。
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

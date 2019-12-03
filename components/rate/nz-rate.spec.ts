@@ -1,6 +1,6 @@
 import { Component, DebugElement, ViewChild } from '@angular/core';
-import { fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { dispatchFakeEvent, dispatchKeyboardEvent } from 'ng-zorro-antd/core';
@@ -140,10 +140,7 @@ describe('rate', () => {
     });
     it('should hover rate work', () => {
       fixture.detectChanges();
-      dispatchFakeEvent(
-        rate.nativeElement.firstElementChild.children[3].firstElementChild.firstElementChild,
-        'mouseover'
-      );
+      dispatchFakeEvent(rate.nativeElement.firstElementChild.children[3].firstElementChild.firstElementChild, 'mouseover');
       fixture.detectChanges();
       expect(rate.nativeElement.firstElementChild.children[3].classList).toContain('ant-rate-star-full');
       expect(testComponent.onHoverChange).toHaveBeenCalledWith(4);
@@ -237,7 +234,6 @@ describe('rate', () => {
 });
 
 @Component({
-  selector: 'nz-test-rate-basic',
   template: `
     <nz-rate
       [(ngModel)]="value"
@@ -256,7 +252,7 @@ describe('rate', () => {
   `
 })
 export class NzTestRateBasicComponent {
-  @ViewChild(NzRateComponent) nzRateComponent: NzRateComponent;
+  @ViewChild(NzRateComponent, { static: false }) nzRateComponent: NzRateComponent;
   count = 5;
   autoFocus = false;
   allowHalf = false;
@@ -271,7 +267,6 @@ export class NzTestRateBasicComponent {
 }
 
 @Component({
-  selector: 'nz-test-rate-form',
   template: `
     <form [formGroup]="formGroup">
       <nz-rate formControlName="rate"></nz-rate>

@@ -1,9 +1,9 @@
 import { Component, DebugElement } from '@angular/core';
-import { fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { NGStyleInterface } from 'ng-zorro-antd/core';
+import { NgStyleInterface } from 'ng-zorro-antd/core';
 
 import { NzBadgeComponent } from './nz-badge.component';
 import { NzBadgeModule } from './nz-badge.module';
@@ -45,6 +45,24 @@ describe('badge', () => {
       expect(badgeElement.nativeElement.querySelector('sup').classList).toContain('ant-badge-multiple-words');
       expect(badgeElement.nativeElement.querySelectorAll('.current')[0].innerText).toBe('1');
       expect(badgeElement.nativeElement.querySelectorAll('.current')[1].innerText).toBe('0');
+    });
+
+    it('should title work', () => {
+      testComponent.overflow = 99;
+      testComponent.count = 1000;
+      fixture.detectChanges();
+      expect(badgeElement.nativeElement.querySelector('sup').getAttribute('title')).toBe('1000');
+      testComponent.title = 'test';
+      fixture.detectChanges();
+      expect(badgeElement.nativeElement.querySelector('sup').getAttribute('title')).toBe('test');
+    });
+
+    it('should offset work', () => {
+      testComponent.offset = [10, 10];
+      fixture.detectChanges();
+      const style = getComputedStyle(badgeElement.nativeElement.querySelector('sup'));
+      expect(style.right).toBe('-10px');
+      expect(style.marginTop).toBe('10px');
     });
 
     it('should overflow work', () => {
@@ -109,9 +127,7 @@ describe('badge', () => {
       statusList.forEach(status => {
         testComponent.status = status;
         fixture.detectChanges();
-        expect(badgeElement.nativeElement.querySelector('.ant-badge-status-dot').classList).toContain(
-          `ant-badge-status-${status}`
-        );
+        expect(badgeElement.nativeElement.querySelector('.ant-badge-status-dot').classList).toContain(`ant-badge-status-${status}`);
       });
       testComponent.text = 'test';
       fixture.detectChanges();
@@ -121,7 +137,6 @@ describe('badge', () => {
 });
 
 @Component({
-  selector: 'nz-test-badge-basic',
   template: `
     <nz-badge
       [nzCount]="count"
@@ -131,6 +146,8 @@ describe('badge', () => {
       [nzOverflowCount]="overflow"
       [nzStyle]="style"
       [nzDot]="dot"
+      [nzOffset]="offset"
+      [nzTitle]="title"
     >
       <a *ngIf="inner"></a>
     </nz-badge>
@@ -143,6 +160,8 @@ export class NzTestBadgeBasicComponent {
   overflow = 20;
   showZero = false;
   status: string;
-  style: NGStyleInterface;
+  style: NgStyleInterface;
   text: string;
+  title: string;
+  offset: [number, number];
 }

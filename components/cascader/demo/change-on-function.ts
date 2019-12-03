@@ -1,5 +1,5 @@
-// tslint:disable:no-any
 import { Component } from '@angular/core';
+import { NzCascaderOption } from 'ng-zorro-antd/cascader';
 
 const options = [
   {
@@ -52,13 +52,7 @@ const options = [
 @Component({
   selector: 'nz-demo-cascader-change-on-function',
   template: `
-    <nz-cascader
-      [nzChangeOn]="validate"
-      [nzOptions]="nzOptions"
-      [(ngModel)]="values"
-      (ngModelChange)="onChanges($event)"
-    >
-    </nz-cascader>
+    <nz-cascader [nzChangeOn]="validate" [nzOptions]="nzOptions" [(ngModel)]="values" (ngModelChange)="onChanges($event)"> </nz-cascader>
   `,
   styles: [
     `
@@ -69,15 +63,15 @@ const options = [
   ]
 })
 export class NzDemoCascaderChangeOnFunctionComponent {
-  nzOptions = options;
-  values: any[] | null = null;
+  nzOptions: NzCascaderOption[] = options;
+  values: string[] | null = null;
 
-  onChanges(values: any): void {
+  onChanges(values: string[]): void {
     console.log(values, this.values);
   }
 
-  validate(option: any, _index: number): boolean {
-    const value = option.value;
+  validate(option: NzCascaderOption, _index: number): boolean {
+    const value = option.value as string;
     return ['hangzhou', 'xihu', 'nanjing', 'zhonghuamen'].indexOf(value) >= 0;
   }
 }

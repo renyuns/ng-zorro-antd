@@ -1,17 +1,27 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { async, fakeAsync, flush, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, NgZone, ViewEncapsulation } from '@angular/core';
+import { async, ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { dispatchFakeEvent } from 'ng-zorro-antd/core';
+import { dispatchFakeEvent, MockNgZone } from 'ng-zorro-antd/core';
 import { NzAutosizeDirective } from './nz-autosize.directive';
 import { NzInputModule } from './nz-input.module';
 
 describe('autoresize', () => {
+  let zone: MockNgZone;
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [NzInputModule, FormsModule, ReactiveFormsModule],
       declarations: [NzTestInputWithTextAreaAutoSizeStringComponent, NzTestInputWithTextAreaAutoSizeObjectComponent],
-      providers: []
+      providers: [
+        {
+          provide: NgZone,
+          useFactory: () => {
+            zone = new MockNgZone();
+            return zone;
+          }
+        }
+      ]
     }).compileComponents();
   }));
 
@@ -43,11 +53,9 @@ describe('autoresize', () => {
         fixture.detectChanges();
         flush();
         autosize.resizeToFitContent();
-
-        expect(textarea.clientHeight).toBeGreaterThan(
-          previousHeight,
-          'Expected textarea to have grown with added content.'
-        );
+        zone.simulateZoneExit();
+        fixture.detectChanges();
+        expect(textarea.clientHeight).toBeGreaterThan(previousHeight, 'Expected textarea to have grown with added content.');
         expect(textarea.clientHeight).toBe(textarea.scrollHeight, 'Expected textarea height to match its scrollHeight');
 
         previousHeight = textarea.clientHeight;
@@ -62,10 +70,9 @@ describe('autoresize', () => {
         flush();
         fixture.detectChanges();
         autosize.resizeToFitContent(true);
-        expect(textarea.clientHeight).toBeGreaterThan(
-          previousHeight,
-          'Expected textarea to have grown with added content.'
-        );
+        zone.simulateZoneExit();
+        fixture.detectChanges();
+        expect(textarea.clientHeight).toBeGreaterThan(previousHeight, 'Expected textarea to have grown with added content.');
         expect(textarea.clientHeight).toBe(textarea.scrollHeight, 'Expected textarea height to match its scrollHeight');
       }));
 
@@ -129,7 +136,6 @@ describe('autoresize', () => {
 });
 
 @Component({
-  selector: 'nz-test-input-with-textarea-autosize-string',
   template: `
     <textarea nz-input nzAutosize [ngModel]="value"></textarea>
   `,
@@ -150,7 +156,6 @@ export class NzTestInputWithTextAreaAutoSizeStringComponent {
 }
 
 @Component({
-  selector: 'nz-test-input-with-textarea-autosize-object',
   template: `
     <textarea nz-input ngModel [nzAutosize]="{ minRows: minRows, maxRows: maxRows }"></textarea>
   `,

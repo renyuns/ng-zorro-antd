@@ -8,13 +8,13 @@
 
 import { FocusMonitor } from '@angular/cdk/a11y';
 import {
-  forwardRef,
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
+  forwardRef,
   Input,
   OnChanges,
   OnDestroy,
@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { isEmpty, InputBoolean } from 'ng-zorro-antd/core';
+import { InputBoolean, isEmpty } from 'ng-zorro-antd/core';
 
 import { NzCheckboxWrapperComponent } from './nz-checkbox-wrapper.component';
 
@@ -55,8 +55,8 @@ export class NzCheckboxComponent implements OnInit, ControlValueAccessor, OnChan
   onChange: (value: any) => void = () => null;
   // tslint:disable-next-line:no-any
   onTouched: () => any = () => null;
-  @ViewChild('inputElement') private inputElement: ElementRef;
-  @ViewChild('contentElement') private contentElement: ElementRef;
+  @ViewChild('inputElement', { static: true }) private inputElement: ElementRef;
+  @ViewChild('contentElement', { static: false }) private contentElement: ElementRef;
   @Output() readonly nzCheckedChange = new EventEmitter<boolean>();
   @Input() nzValue: string;
   @Input() @InputBoolean() nzAutoFocus = false;

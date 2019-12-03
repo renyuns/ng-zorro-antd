@@ -6,6 +6,7 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
+import { ContentObserver } from '@angular/cdk/observers';
 import {
   AfterContentInit,
   ChangeDetectionStrategy,
@@ -25,26 +26,33 @@ import {
   Renderer2,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ViewRef
 } from '@angular/core';
 import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
 
 import {
   findFirstNotEmptyNode,
   findLastNotEmptyNode,
-  isEmpty,
   InputBoolean,
+  isEmpty,
+  NZ_WAVE_GLOBAL_CONFIG,
+  NzConfigService,
   NzSizeLDSType,
   NzSizeMap,
   NzUpdateHostClassService,
   NzWaveConfig,
   NzWaveDirective,
-  NZ_WAVE_GLOBAL_CONFIG
+  WithConfig
 } from 'ng-zorro-antd/core';
 import { NzIconDirective } from 'ng-zorro-antd/icon';
+import { Subject } from 'rxjs';
+import { startWith, takeUntil } from 'rxjs/operators';
 
-export type NzButtonType = 'primary' | 'dashed' | 'danger' | 'default';
+export type NzButtonType = 'primary' | 'dashed' | 'danger' | 'default' | 'link';
 export type NzButtonShape = 'circle' | 'round' | null;
+
+const NZ_CONFIG_COMPONENT_NAME = 'button';
 
 @Component({
   selector: '[nz-button]',
@@ -56,24 +64,23 @@ export type NzButtonShape = 'circle' | 'round' | null;
   templateUrl: './nz-button.component.html'
 })
 export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, OnChanges {
-  readonly el: HTMLElement = this.elementRef.nativeElement;
-  private iconElement: HTMLElement;
-  private iconOnly = false;
-  @ViewChild('contentElement') contentElement: ElementRef;
+  @ViewChild('contentElement', { static: true }) contentElement: ElementRef;
   @ContentChildren(NzIconDirective, { read: ElementRef }) listOfIconElement: QueryList<ElementRef>;
-  @HostBinding('attr.nz-wave') nzWave = new NzWaveDirective(
-    this.ngZone,
-    this.elementRef,
-    this.waveConfig,
-    this.animationType
-  );
-  @Input() @InputBoolean() nzBlock = false;
-  @Input() @InputBoolean() nzGhost = false;
-  @Input() @InputBoolean() nzSearch = false;
-  @Input() @InputBoolean() nzLoading = false;
+  @HostBinding('attr.nz-wave') nzWave = new NzWaveDirective(this.ngZone, this.elementRef, this.waveConfig, this.animationType);
+
+  @Input() @InputBoolean() nzBlock: boolean = false;
+  @Input() @InputBoolean() nzGhost: boolean = false;
+  @Input() @InputBoolean() nzSearch: boolean = false;
+  @Input() @InputBoolean() nzLoading: boolean = false;
   @Input() nzType: NzButtonType = 'default';
   @Input() nzShape: NzButtonShape = null;
-  @Input() nzSize: NzSizeLDSType = 'default';
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'default') nzSize: NzSizeLDSType;
+
+  readonly el: HTMLElement = this.elementRef.nativeElement;
+  isInDropdown = false;
+  private iconElement: HTMLElement;
+  private iconOnly = false;
+  private destroy$ = new Subject<void>();
 
   /** temp solution since no method add classMap to host https://github.com/angular/angular/issues/7289 */
   setClassMap(): void {
@@ -84,7 +91,7 @@ export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, O
       [`${prefixCls}-${this.nzShape}`]: this.nzShape,
       [`${prefixCls}-${sizeMap[this.nzSize]}`]: sizeMap[this.nzSize],
       [`${prefixCls}-loading`]: this.nzLoading,
-      [`${prefixCls}-icon-only`]: this.iconOnly,
+      [`${prefixCls}-icon-only`]: this.iconOnly && !this.nzSearch && !this.isInDropdown,
       [`${prefixCls}-background-ghost`]: this.nzGhost,
       [`${prefixCls}-block`]: this.nzBlock,
       [`ant-input-search-button`]: this.nzSearch
@@ -113,7 +120,9 @@ export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, O
     }
     this.setClassMap();
     this.updateIconDisplay(this.nzLoading);
-    this.cdr.detectChanges();
+    if (!(this.cdr as ViewRef).destroyed) {
+      this.cdr.detectChanges();
+    }
   }
 
   moveIcon(): void {
@@ -133,16 +142,31 @@ export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, O
     private elementRef: ElementRef,
     private cdr: ChangeDetectorRef,
     private renderer: Renderer2,
+    private contentObserver: ContentObserver,
     private nzUpdateHostClassService: NzUpdateHostClassService,
     private ngZone: NgZone,
+    public nzConfigService: NzConfigService,
     @Optional() @Inject(NZ_WAVE_GLOBAL_CONFIG) private waveConfig: NzWaveConfig,
     @Optional() @Inject(ANIMATION_MODULE_TYPE) private animationType: string
   ) {
     this.renderer.addClass(elementRef.nativeElement, 'ant-btn');
+    this.nzConfigService
+      .getConfigChangeEventForComponent(NZ_CONFIG_COMPONENT_NAME)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.setClassMap();
+        this.cdr.markForCheck();
+      });
   }
 
   ngAfterContentInit(): void {
-    this.checkContent();
+    this.contentObserver
+      .observe(this.contentElement)
+      .pipe(startWith(true), takeUntil(this.destroy$))
+      .subscribe(() => {
+        // https://github.com/NG-ZORRO/ng-zorro-antd/issues/3079
+        Promise.resolve().then(() => this.checkContent());
+      });
   }
 
   ngOnInit(): void {
@@ -151,6 +175,8 @@ export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, O
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.nzWave.ngOnDestroy();
   }
 
@@ -168,6 +194,11 @@ export class NzButtonComponent implements AfterContentInit, OnInit, OnDestroy, O
     }
     if (changes.nzLoading) {
       this.updateIconDisplay(this.nzLoading);
+    }
+    if (changes.nzType && changes.nzType.currentValue === 'link') {
+      this.nzWave.disable();
+    } else {
+      this.nzWave.enable();
     }
   }
 }

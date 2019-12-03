@@ -311,7 +311,6 @@ export class NzTreeBaseService implements OnDestroy {
    */
   conductUp(node: NzTreeNode): void {
     const parentNode = node.getParentNode();
-    // 全禁用节点不选中
     if (parentNode) {
       if (!isCheckDisabled(parentNode)) {
         if (parentNode.children.every(child => isCheckDisabled(child) || (!child.isHalfChecked && child.isChecked))) {
@@ -375,6 +374,7 @@ export class NzTreeBaseService implements OnDestroy {
       } else {
         n.isMatched = false;
       }
+      n.canHide = !n.isMatched;
       n.children.forEach(child => {
         searchChild(child);
       });
@@ -441,7 +441,7 @@ export class NzTreeBaseService implements OnDestroy {
     const { clientY } = event;
     // to fix firefox undefined
     const { top, bottom, height } = event.srcElement
-      ? event.srcElement.getBoundingClientRect()
+      ? (event.srcElement as Element).getBoundingClientRect()
       : (event.target as Element).getBoundingClientRect();
     const des = Math.max(height * this.DRAG_SIDE_RANGE, this.DRAG_MIN_GAP);
 
@@ -487,7 +487,7 @@ export class NzTreeBaseService implements OnDestroy {
           }
         } else {
           const targetIndex = this.rootNodes.indexOf(targetNode) + tIndex;
-          // 根节点插入
+          // Insert root node.
           this.rootNodes.splice(targetIndex, 0, this.selectedNode);
           this.rootNodes[targetIndex].parentNode = null;
           this.rootNodes[targetIndex].level = 0;

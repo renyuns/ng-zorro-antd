@@ -1,20 +1,24 @@
 import { Rule } from '@angular-devkit/schematics';
-import { createUpgradeRule, TargetVersion, UpgradeTSLintConfig } from '@angular/cdk/schematics';
+import { createUpgradeRule, TargetVersion } from '@angular/cdk/schematics';
 import chalk from 'chalk';
-import { sync as globSync } from 'glob';
-import { materialUpgradeData } from './upgrade-data';
-
-const ruleDirectories = globSync('upgrade-rules/**/', { cwd: __dirname, absolute: true });
-
-/** TSLint upgrade configuration that will be passed to the CDK ng-update rule. */
-const tslintUpgradeConfig: UpgradeTSLintConfig = {
-  upgradeData: materialUpgradeData,
-  extraRuleDirectories: ruleDirectories
-};
+import { ruleUpgradeData } from './upgrade-data';
+import { DropdownClassRule } from './upgrade-rules/checks/dropdown-class-rule';
+import { DropdownTemplateRule } from './upgrade-rules/checks/dropdown-template-rule';
+import { TooltipLikeTemplateRule } from './upgrade-rules/checks/tooltip-like-template-rule';
 
 /** Entry point for the migration schematics with target of NG-ZORRO v7 */
 export function updateToV7(): Rule {
-  return createUpgradeRule(TargetVersion.V7, tslintUpgradeConfig);
+  return createUpgradeRule(TargetVersion.V7, [TooltipLikeTemplateRule], ruleUpgradeData, postUpdate);
+}
+
+/** Entry point for the migration schematics with target of NG-ZORRO v9 */
+export function updateToV9(): Rule {
+  return createUpgradeRule(
+    TargetVersion.V9, [
+      TooltipLikeTemplateRule,
+      DropdownTemplateRule,
+      DropdownClassRule
+    ], ruleUpgradeData, postUpdate);
 }
 
 /** Post-update schematic to be called when update is finished. */
@@ -26,7 +30,7 @@ export function postUpdate(): Rule {
     console.log(
       chalk.yellow(
         '  ⚠  Please check the output above for any issues that were detected ' +
-          'but could not be automatically fixed.'
+        'but could not be automatically fixed.'
       )
     );
   };

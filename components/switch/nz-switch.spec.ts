@@ -1,7 +1,7 @@
 import { ENTER, LEFT_ARROW, RIGHT_ARROW, SPACE } from '@angular/cdk/keycodes';
 import { Component, DebugElement, TemplateRef, ViewChild } from '@angular/core';
-import { fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { dispatchKeyboardEvent } from 'ng-zorro-antd/core';
@@ -177,16 +177,16 @@ describe('switch', () => {
       fixture.detectChanges();
       flush();
       fixture.detectChanges();
-      expect(
-        switchElement.nativeElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild!.classList
-      ).toContain('anticon-close');
+      expect(switchElement.nativeElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild!.classList).toContain(
+        'anticon-close'
+      );
       switchElement.nativeElement.click();
       fixture.detectChanges();
       flush();
       fixture.detectChanges();
-      expect(
-        switchElement.nativeElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild!.classList
-      ).toContain('anticon-check');
+      expect(switchElement.nativeElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild!.classList).toContain(
+        'anticon-check'
+      );
     }));
   });
   describe('switch form', () => {
@@ -230,10 +230,9 @@ describe('switch', () => {
 });
 
 @Component({
-  selector: 'nz-test-switch-basic',
   template: `
-    <ng-template #checkedChildrenTemplate><i nz-icon type="check"></i></ng-template>
-    <ng-template #unCheckedChildrenTemplate><i nz-icon type="closs"></i></ng-template>
+    <ng-template #checkedChildrenTemplate><i nz-icon nzType="check"></i></ng-template>
+    <ng-template #unCheckedChildrenTemplate><i nz-icon nzType="closs"></i></ng-template>
     <nz-switch
       [(ngModel)]="value"
       (ngModelChange)="modelChange($event)"
@@ -248,9 +247,9 @@ describe('switch', () => {
   `
 })
 export class NzTestSwitchBasicComponent {
-  @ViewChild(NzSwitchComponent) nzSwitchComponent: NzSwitchComponent;
-  @ViewChild('checkedChildrenTemplate') checkedChildrenTemplate: TemplateRef<void>;
-  @ViewChild('unCheckedChildrenTemplate') unCheckedChildrenTemplate: TemplateRef<void>;
+  @ViewChild(NzSwitchComponent, { static: false }) nzSwitchComponent: NzSwitchComponent;
+  @ViewChild('checkedChildrenTemplate', { static: false }) checkedChildrenTemplate: TemplateRef<void>;
+  @ViewChild('unCheckedChildrenTemplate', { static: false }) unCheckedChildrenTemplate: TemplateRef<void>;
   checkedChildren = 'on';
   unCheckedChildren = 'off';
   value = false;
@@ -262,18 +261,15 @@ export class NzTestSwitchBasicComponent {
 }
 
 @Component({
-  selector: 'nz-test-switch-template',
   template: `
-    <ng-template #checkedChildrenTemplate><i nz-icon type="check"></i></ng-template>
-    <ng-template #unCheckedChildrenTemplate><i nz-icon type="close"></i></ng-template>
-    <nz-switch [nzCheckedChildren]="checkedChildrenTemplate" [nzUnCheckedChildren]="unCheckedChildrenTemplate">
-    </nz-switch>
+    <ng-template #checkedChildrenTemplate><i nz-icon nzType="check"></i></ng-template>
+    <ng-template #unCheckedChildrenTemplate><i nz-icon nzType="close"></i></ng-template>
+    <nz-switch [nzCheckedChildren]="checkedChildrenTemplate" [nzUnCheckedChildren]="unCheckedChildrenTemplate"> </nz-switch>
   `
 })
 export class NzTestSwitchTemplateComponent {}
 
 @Component({
-  selector: 'nz-test-switch-form',
   template: `
     <form [formGroup]="formGroup">
       <nz-switch formControlName="switchValue"></nz-switch>

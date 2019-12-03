@@ -9,12 +9,12 @@
 import { FocusMonitor } from '@angular/cdk/a11y';
 import { ENTER, LEFT_ARROW, RIGHT_ARROW, SPACE } from '@angular/cdk/keycodes';
 import {
-  forwardRef,
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
+  forwardRef,
   Input,
   OnDestroy,
   TemplateRef,
@@ -23,7 +23,9 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { InputBoolean, NzSizeDSType } from 'ng-zorro-antd/core';
+import { InputBoolean, NzConfigService, NzSizeDSType, WithConfig } from 'ng-zorro-antd/core';
+
+const NZ_CONFIG_COMPONENT_NAME = 'switch';
 
 @Component({
   selector: 'nz-switch',
@@ -54,13 +56,13 @@ export class NzSwitchComponent implements ControlValueAccessor, AfterViewInit, O
   checked = false;
   onChange: (value: boolean) => void = () => null;
   onTouched: () => void = () => null;
-  @ViewChild('switchElement') private switchElement: ElementRef;
+  @ViewChild('switchElement', { static: true }) private switchElement: ElementRef;
   @Input() @InputBoolean() nzLoading = false;
   @Input() @InputBoolean() nzDisabled = false;
   @Input() @InputBoolean() nzControl = false;
   @Input() nzCheckedChildren: string | TemplateRef<void>;
   @Input() nzUnCheckedChildren: string | TemplateRef<void>;
-  @Input() nzSize: NzSizeDSType;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 'default') nzSize: NzSizeDSType;
 
   hostClick(e: MouseEvent): void {
     e.preventDefault();
@@ -99,7 +101,7 @@ export class NzSwitchComponent implements ControlValueAccessor, AfterViewInit, O
     this.switchElement.nativeElement.blur();
   }
 
-  constructor(private cdr: ChangeDetectorRef, private focusMonitor: FocusMonitor) {}
+  constructor(public nzConfigService: NzConfigService, private cdr: ChangeDetectorRef, private focusMonitor: FocusMonitor) {}
 
   ngAfterViewInit(): void {
     this.focusMonitor.monitor(this.switchElement.nativeElement, true).subscribe(focusOrigin => {

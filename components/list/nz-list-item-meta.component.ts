@@ -6,18 +6,10 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Input,
-  Renderer2,
-  TemplateRef,
-  ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, Renderer2, TemplateRef, ViewEncapsulation } from '@angular/core';
 
 @Component({
-  selector: 'nz-list-item-meta',
+  selector: 'nz-list-item-meta, [nz-list-item-meta]',
   exportAs: 'nzListItemMeta',
   templateUrl: './nz-list-item-meta.component.html',
   preserveWhitespaces: false,

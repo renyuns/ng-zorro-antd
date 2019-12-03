@@ -1,6 +1,6 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { fakeAsync, inject, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { dispatchMouseEvent } from 'ng-zorro-antd/core';
@@ -10,18 +10,16 @@ import { NzNotificationModule } from './nz-notification.module';
 import { NzNotificationService } from './nz-notification.service';
 
 @Component({
-  selector: 'nz-demo-app-component',
   template: `
     <ng-template let-data="data">{{ 'test template content' }}{{ data }}</ng-template>
   `
 })
 export class DemoAppComponent {
-  @ViewChild(TemplateRef) demoTemplateRef: TemplateRef<{}>;
+  @ViewChild(TemplateRef, { static: true }) demoTemplateRef: TemplateRef<{}>;
 }
 
 describe('NzNotification', () => {
   let notificationService: NzNotificationService;
-  let overlayContainer: OverlayContainer;
   let overlayContainerElement: HTMLElement;
   let fixture: ComponentFixture<DemoAppComponent>;
 
@@ -37,12 +35,13 @@ describe('NzNotification', () => {
 
   beforeEach(inject([NzNotificationService, OverlayContainer], (n: NzNotificationService, oc: OverlayContainer) => {
     notificationService = n;
-    overlayContainer = oc;
-    overlayContainerElement = oc.getContainerElement();
+    if (!overlayContainerElement) {
+      overlayContainerElement = oc.getContainerElement();
+    }
   }));
 
   afterEach(() => {
-    overlayContainer.ngOnDestroy();
+    notificationService.remove();
   });
 
   beforeEach(() => {

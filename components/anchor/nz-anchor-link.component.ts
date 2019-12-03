@@ -45,7 +45,8 @@ export class NzAnchorLinkComponent implements OnInit, OnDestroy {
   @Input() nzHref = '#';
 
   titleStr: string | null = '';
-  titleTpl: TemplateRef<void>;
+  // tslint:disable-next-line:no-any
+  titleTpl: TemplateRef<any>;
   active: boolean = false;
 
   @Input()
@@ -58,7 +59,7 @@ export class NzAnchorLinkComponent implements OnInit, OnDestroy {
     }
   }
 
-  @ContentChild('nzTemplate') nzTemplate: TemplateRef<void>;
+  @ContentChild('nzTemplate', { static: false }) nzTemplate: TemplateRef<void>;
 
   constructor(
     public elementRef: ElementRef,

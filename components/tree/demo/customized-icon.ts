@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'nz-demo-tree-customized-icon',
   template: `
     <nz-tree [nzData]="nodes" nzShowIcon [nzExpandedIcon]="expandedIconTpl">
       <ng-template #expandedIconTpl let-node>
-        <i nz-icon [type]="node.origin.icon" class="ant-tree-switcher-icon"></i>
+        <i nz-icon [nzType]="node.origin.icon" class="ant-tree-switcher-icon"></i>
       </ng-template>
     </nz-tree>
     <nz-tree [nzData]="nodes" nzShowIcon [nzExpandedIcon]="mutiExpandedIconTpl">
@@ -13,15 +13,15 @@ import { Component, OnInit } from '@angular/core';
         <i
           *ngIf="!node.origin.isLeaf"
           nz-icon
-          [type]="node.isExpanded ? 'folder-open' : 'folder'"
+          [nzType]="node.isExpanded ? 'folder-open' : 'folder'"
           class="ant-tree-switcher-line-icon"
         ></i>
-        <i *ngIf="node.origin.isLeaf" nz-icon type="file" class="ant-tree-switcher-line-icon"></i>
+        <i *ngIf="node.origin.isLeaf" nz-icon nzType="file" class="ant-tree-switcher-line-icon"></i>
       </ng-template>
     </nz-tree>
   `
 })
-export class NzDemoTreeCustomizedIconComponent implements OnInit {
+export class NzDemoTreeCustomizedIconComponent {
   nodes = [
     {
       title: 'parent 1',
@@ -34,6 +34,4 @@ export class NzDemoTreeCustomizedIconComponent implements OnInit {
       ]
     }
   ];
-
-  ngOnInit(): void {}
 }

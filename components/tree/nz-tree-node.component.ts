@@ -27,12 +27,13 @@ import { fromEvent, Observable, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
 import {
-  collapseMotion,
   InputBoolean,
   NzFormatBeforeDropEvent,
   NzNoAnimationDirective,
   NzTreeBaseService,
-  NzTreeNode
+  NzTreeNode,
+  treeCollapseMotion,
+  warnDeprecation
 } from 'ng-zorro-antd/core';
 
 @Component({
@@ -41,10 +42,10 @@ import {
   templateUrl: './nz-tree-node.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   preserveWhitespaces: false,
-  animations: [collapseMotion]
+  animations: [treeCollapseMotion]
 })
 export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
-  @ViewChild('dragElement') dragElement: ElementRef;
+  @ViewChild('dragElement', { static: false }) dragElement: ElementRef;
 
   /**
    * for global property
@@ -61,6 +62,7 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nzExpandedIcon: TemplateRef<{ $implicit: NzTreeNode }>;
   @Input() nzTreeTemplate: TemplateRef<{ $implicit: NzTreeNode }>;
   @Input() nzBeforeDrop: (confirm: NzFormatBeforeDropEvent) => Observable<boolean>;
+  @Input() nzSearchValue = '';
 
   @Input()
   set nzDraggable(value: boolean) {
@@ -73,11 +75,11 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * @deprecated use
-   * nzExpandAll instead
+   * @deprecated use `nzExpandAll` instead.
    */
   @Input()
   set nzDefaultExpandAll(value: boolean) {
+    warnDeprecation(`'nzDefaultExpandAll' is going to be removed in 9.0.0. Please use 'nzExpandAll' instead.`);
     this._nzExpandAll = value;
     if (value && this.nzTreeNode && !this.nzTreeNode.isLeaf) {
       this.nzTreeNode.isExpanded = true;
@@ -101,27 +103,8 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
     return this._nzExpandAll;
   }
 
-  @Input()
-  set nzSearchValue(value: string) {
-    this.highlightKeys = [];
-    if (value && this.nzTreeNode.title!.includes(value)) {
-      // match the search value
-      const index = this.nzTreeNode.title.indexOf(value);
-      this.highlightKeys = [
-        this.nzTreeNode.title.slice(0, index),
-        this.nzTreeNode.title.slice(index + value.length, this.nzTreeNode.title.length)
-      ];
-    }
-    this._searchValue = value;
-  }
-
-  get nzSearchValue(): string {
-    return this._searchValue;
-  }
-
   // default var
   prefixCls = 'ant-tree';
-  highlightKeys: string[] = [];
   nzNodeClass = {};
   nzNodeSwitcherClass = {};
   nzNodeContentClass = {};
@@ -143,7 +126,6 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * default set
    */
-  _searchValue = '';
   _nzDraggable = false;
   _nzExpandAll = false;
 
@@ -173,7 +155,11 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
 
   get displayStyle(): string {
     // to hide unmatched nodes
-    return this.nzSearchValue && this.nzHideUnMatched && !this.nzTreeNode.isMatched && !this.nzTreeNode.isExpanded
+    return this.nzSearchValue &&
+      this.nzHideUnMatched &&
+      !this.nzTreeNode.isMatched &&
+      !this.nzTreeNode.isExpanded &&
+      this.nzTreeNode.canHide
       ? 'none'
       : '';
   }
@@ -274,8 +260,31 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
         this.nzTreeNode.isLoading = true;
       }
       this.nzTreeNode.isExpanded = !this.nzTreeNode.isExpanded;
+      if (this.nzTreeNode.isMatched) {
+        this.setDisplayForParentNodes(this.nzTreeNode);
+      }
+      this.setDisplayForChildNodes(this.nzTreeNode);
       const eventNext = this.nzTreeService.formatEvent('expand', this.nzTreeNode, event);
       this.nzTreeService!.triggerEventChange$!.next(eventNext);
+    }
+  }
+
+  private setDisplayForChildNodes(parentNode: NzTreeNode): void {
+    const { children } = parentNode;
+    if (children.length > 0) {
+      children.map(node => {
+        const canHide = !node.isMatched;
+        node.canHide = canHide;
+        this.setDisplayForChildNodes(node);
+      });
+    }
+  }
+
+  private setDisplayForParentNodes(targetNode: NzTreeNode): void {
+    const parentNode = targetNode.getParentNode();
+    if (parentNode) {
+      parentNode.canHide = false;
+      this.setDisplayForParentNodes(parentNode);
     }
   }
 
@@ -408,7 +417,7 @@ export class NzTreeNodeComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * 监听拖拽事件
+   * Listening to dragging events.
    */
   handDragEvent(): void {
     this.ngZone.runOutsideAngular(() => {

@@ -1,6 +1,6 @@
 import { Component, DebugElement } from '@angular/core';
-import { async, fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { NzIconTestModule } from 'ng-zorro-antd/icon/testing';
 import { NzInputDirective } from './nz-input.directive';
@@ -80,18 +80,17 @@ describe('input', () => {
       });
       it('should set disabled work', fakeAsync(() => {
         flush();
-        expect(inputElement.nativeElement.classList).not.toContain('ant-input-disabled');
+        expect(inputElement.nativeElement.attributes.getNamedItem('disabled')).toBeNull();
         testComponent.disable();
         flush();
         fixture.detectChanges();
-        expect(inputElement.nativeElement.classList).toContain('ant-input-disabled');
+        expect(inputElement.nativeElement.attributes.getNamedItem('disabled')).toBeDefined();
       }));
     });
   });
 });
 
 @Component({
-  selector: 'nz-test-input-with-input',
   template: `
     <input nz-input [nzSize]="size" [disabled]="disabled" />
   `
@@ -102,7 +101,6 @@ export class NzTestInputWithInputComponent {
 }
 
 @Component({
-  selector: 'nz-test-input-with-textarea',
   template: `
     <textarea nz-input></textarea>
   `
@@ -110,7 +108,6 @@ export class NzTestInputWithInputComponent {
 export class NzTestInputWithTextAreaComponent {}
 
 @Component({
-  selector: 'nz-test-input-form',
   template: `
     <form [formGroup]="formGroup">
       <input nz-input formControlName="input" />

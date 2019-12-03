@@ -1,4 +1,4 @@
-export const stackBlitzConfiguration = (componentName: string, appComponentCode: string, selector: string) => {
+export const stackBlitzConfiguration = (componentName: string, appComponentCode: string, selector: string, version: string) => {
   const mainCode = `import './polyfills';
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
@@ -245,22 +245,20 @@ export class AppModule { }`;
     description : 'Created with <3 by the StackBlitz SDK!',
     template    : 'angular-cli',
     dependencies: {
-      rxjs                               : '^6.3.3',
-      '@angular/cdk'                     : '^7.0.0',
-      '@angular/core'                    : '^7.0.0',
-      '@angular/forms'                   : '^7.0.0',
-      '@angular/http'                    : '^7.0.0',
-      '@angular/language-service'        : '^7.0.0',
-      '@angular/platform-browser'        : '^7.0.0',
-      '@angular/platform-browser-dynamic': '^7.0.0',
-      '@angular/common'                  : '^7.0.0',
-      '@angular/router'                  : '^7.0.0',
-      '@angular/animations'              : '^7.0.0',
-      '@ant-design/icons-angular'        : '^2.0.2',
-      'date-fns'                         : '^1.29.0',
-      tslib                              : '^1.9.3',
-      typescript                         : '~3.1.1',
-      'ng-zorro-antd': '^7.4.1'
+      'rxjs'                             : '~6.5.2',
+      '@angular/cdk'                     : '^8.0.0',
+      '@angular/compiler'                : '^8.0.0',
+      '@angular/core'                    : '^8.0.0',
+      '@angular/forms'                   : '^8.0.0',
+      '@angular/language-service'        : '^8.0.0',
+      '@angular/platform-browser'        : '^8.0.0',
+      '@angular/platform-browser-dynamic': '^8.0.0',
+      '@angular/common'                  : '^8.0.0',
+      '@angular/router'                  : '^8.0.0',
+      '@angular/animations'              : '^8.0.0',
+      '@ant-design/icons-angular'        : '^8.0.0',
+      'date-fns'                         : '^1.30.1',
+      'ng-zorro-antd':  `^${version}`
     },
     tags        : [ 'stackblitz', 'sdk' ]
   };

@@ -6,23 +6,11 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-  TemplateRef,
-  ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, TemplateRef, ViewEncapsulation } from '@angular/core';
 
-import { FunctionProp } from 'ng-zorro-antd/core';
+import { CandyDate, FunctionProp } from 'ng-zorro-antd/core';
 import { NzCalendarI18nInterface } from 'ng-zorro-antd/i18n';
-import { DisabledDateFn, PanelMode } from '../../standard-types';
-import { CandyDate } from '../candy-date/candy-date';
+import { DisabledDateFn, PanelMode, SupportTimeOptions } from '../../standard-types';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -32,13 +20,12 @@ import { CandyDate } from '../candy-date/candy-date';
   exportAs: 'innerPopup',
   templateUrl: 'inner-popup.component.html'
 })
-export class InnerPopupComponent implements OnInit, OnChanges {
+export class InnerPopupComponent {
   @Input() showWeek: boolean;
 
   @Input() locale: NzCalendarI18nInterface;
   @Input() showTimePicker: boolean;
-  // tslint:disable-next-line:no-any
-  @Input() timeOptions: any;
+  @Input() timeOptions: SupportTimeOptions;
   @Input() enablePrev: boolean;
   @Input() enableNext: boolean;
   @Input() disabledDate: DisabledDateFn;
@@ -58,16 +45,6 @@ export class InnerPopupComponent implements OnInit, OnChanges {
 
   prefixCls: string = 'ant-calendar';
 
-  constructor() {}
-
-  ngOnInit(): void {}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.value && !this.value) {
-      this.value = new CandyDate();
-    }
-  }
-
   onSelectTime(date: Date): void {
     this.selectTime.emit(new CandyDate(date));
   }
@@ -75,6 +52,13 @@ export class InnerPopupComponent implements OnInit, OnChanges {
   // The value real changed to outside
   onSelectDate(date: CandyDate | Date): void {
     const value = date instanceof CandyDate ? date : new CandyDate(date);
+    const timeValue = this.timeOptions && this.timeOptions.nzDefaultOpenValue;
+
+    // Display timeValue when value is null
+    if (!this.value && timeValue) {
+      value.setHms(timeValue.getHours(), timeValue.getMinutes(), timeValue.getSeconds());
+    }
+
     this.selectDate.emit(value);
   }
 }

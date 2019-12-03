@@ -25,9 +25,9 @@ import {
   SimpleChanges,
   ViewEncapsulation
 } from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
+import { startWith, takeUntil } from 'rxjs/operators';
 
-import { InputBoolean, NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import { InputBoolean, NzDomEventService, NzUpdateHostClassService } from 'ng-zorro-antd/core';
 import { NzRowDirective } from 'ng-zorro-antd/grid';
 
 import { NzFormExplainComponent } from './nz-form-explain.component';
@@ -42,7 +42,7 @@ import { NzFormExplainComponent } from './nz-form-explain.component';
   providers: [NzUpdateHostClassService],
   templateUrl: './nz-form-item.component.html',
   host: {
-    '[class.ant-form-item-with-help]': 'listOfNzFormExplainComponent && (listOfNzFormExplainComponent.length > 0)'
+    '[class.ant-form-item-with-help]': 'withHelpClass'
   },
   styles: [
     `
@@ -52,12 +52,12 @@ import { NzFormExplainComponent } from './nz-form-explain.component';
     `
   ]
 })
-export class NzFormItemComponent extends NzRowDirective
-  implements AfterContentInit, OnDestroy, OnChanges, OnInit, OnDestroy {
+export class NzFormItemComponent extends NzRowDirective implements AfterContentInit, OnDestroy, OnChanges, OnInit, OnDestroy {
   @Input() @InputBoolean() nzFlex: boolean = false;
-
   @ContentChildren(NzFormExplainComponent, { descendants: true })
   listOfNzFormExplainComponent: QueryList<NzFormExplainComponent>;
+  withHelpClass = false;
+  tipsMode = false;
 
   updateFlexStyle(): void {
     if (this.nzFlex) {
@@ -67,6 +67,12 @@ export class NzFormItemComponent extends NzRowDirective
     }
   }
 
+  setWithHelpViaTips(value: boolean): void {
+    this.tipsMode = true;
+    this.withHelpClass = value;
+    this.cdr.markForCheck();
+  }
+
   constructor(
     elementRef: ElementRef,
     renderer: Renderer2,
@@ -74,15 +80,17 @@ export class NzFormItemComponent extends NzRowDirective
     mediaMatcher: MediaMatcher,
     ngZone: NgZone,
     platform: Platform,
+    nzDomEventService: NzDomEventService,
     private cdr: ChangeDetectorRef
   ) {
-    super(elementRef, renderer, nzUpdateHostClassService, mediaMatcher, ngZone, platform);
+    super(elementRef, renderer, nzUpdateHostClassService, mediaMatcher, ngZone, platform, nzDomEventService);
     renderer.addClass(elementRef.nativeElement, 'ant-form-item');
   }
 
   ngAfterContentInit(): void {
-    if (this.listOfNzFormExplainComponent) {
-      this.listOfNzFormExplainComponent.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    if (!this.tipsMode) {
+      this.listOfNzFormExplainComponent.changes.pipe(startWith(true), takeUntil(this.destroy$)).subscribe(() => {
+        this.withHelpClass = this.listOfNzFormExplainComponent && this.listOfNzFormExplainComponent.length > 0;
         this.cdr.markForCheck();
       });
     }
@@ -90,6 +98,7 @@ export class NzFormItemComponent extends NzRowDirective
 
   ngOnInit(): void {
     super.ngOnInit();
+
     this.updateFlexStyle();
   }
 

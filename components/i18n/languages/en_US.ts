@@ -51,5 +51,17 @@ export default {
   },
   Empty: {
     description: 'No Data'
+  },
+  Icon: {
+    icon: 'icon'
+  },
+  Text: {
+    edit: 'edit',
+    copy: 'copy',
+    copied: 'copy success',
+    expand: 'expand'
+  },
+  PageHeader: {
+    back: 'back'
   }
 };

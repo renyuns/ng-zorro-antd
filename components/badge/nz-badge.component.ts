@@ -6,13 +6,17 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
+import { ContentObserver } from '@angular/cdk/observers';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
+  NgZone,
   OnChanges,
+  OnDestroy,
   OnInit,
   Renderer2,
   SimpleChanges,
@@ -20,9 +24,13 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { isEmpty, zoomBadgeMotion, InputBoolean } from 'ng-zorro-antd/core';
+import { InputBoolean, isEmpty, NzConfigService, WithConfig, zoomBadgeMotion } from 'ng-zorro-antd/core';
+import { Subject } from 'rxjs';
+import { startWith, take, takeUntil } from 'rxjs/operators';
 
 export type NzBadgeStatusType = 'success' | 'processing' | 'default' | 'error' | 'warning';
+
+const NZ_CONFIG_COMPONENT_NAME = 'backTop';
 
 @Component({
   selector: 'nz-badge',
@@ -36,40 +44,32 @@ export type NzBadgeStatusType = 'success' | 'processing' | 'default' | 'error' |
     '[class.ant-badge-status]': 'nzStatus'
   }
 })
-export class NzBadgeComponent implements OnInit, AfterViewInit, OnChanges {
+export class NzBadgeComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  private destroy$ = new Subject();
+  notWrapper = true;
+  viewInit = false;
   maxNumberArray: string[] = [];
   countArray: number[] = [];
   countSingleArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  colorArray = [
-    'pink',
-    'red',
-    'yellow',
-    'orange',
-    'cyan',
-    'green',
-    'blue',
-    'purple',
-    'geekblue',
-    'magenta',
-    'volcano',
-    'gold',
-    'lime'
-  ];
+  colorArray = ['pink', 'red', 'yellow', 'orange', 'cyan', 'green', 'blue', 'purple', 'geekblue', 'magenta', 'volcano', 'gold', 'lime'];
   presetColor: string | null = null;
   count: number;
-  @ViewChild('contentElement') contentElement: ElementRef;
-  @Input() @InputBoolean() nzShowZero = false;
+  @ViewChild('contentElement', { static: false }) contentElement: ElementRef;
+  @Input() @InputBoolean() nzShowZero: boolean = false;
   @Input() @InputBoolean() nzShowDot = true;
   @Input() @InputBoolean() nzDot = false;
-  @Input() nzOverflowCount = 99;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, 99) nzOverflowCount: number;
   @Input() nzText: string;
-  @Input() nzColor: string;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME) nzColor: string;
+  @Input() nzTitle: string;
   @Input() nzStyle: { [key: string]: string };
   @Input() nzStatus: NzBadgeStatusType;
   @Input() nzCount: number | TemplateRef<void>;
+  @Input() nzOffset: [number, number];
 
   checkContent(): void {
-    if (isEmpty(this.contentElement.nativeElement)) {
+    this.notWrapper = isEmpty(this.contentElement.nativeElement);
+    if (this.notWrapper) {
       this.renderer.addClass(this.elementRef.nativeElement, 'ant-badge-not-a-wrapper');
     } else {
       this.renderer.removeClass(this.elementRef.nativeElement, 'ant-badge-not-a-wrapper');
@@ -84,7 +84,14 @@ export class NzBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     this.maxNumberArray = this.nzOverflowCount.toString().split('');
   }
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef) {
+  constructor(
+    public nzConfigService: NzConfigService,
+    private renderer: Renderer2,
+    private elementRef: ElementRef,
+    private contentObserver: ContentObserver,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {
     renderer.addClass(elementRef.nativeElement, 'ant-badge');
   }
 
@@ -93,7 +100,17 @@ export class NzBadgeComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   ngAfterViewInit(): void {
-    this.checkContent();
+    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+      this.viewInit = true;
+      this.cdr.markForCheck();
+    });
+
+    this.contentObserver
+      .observe(this.contentElement)
+      .pipe(startWith(true), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.checkContent();
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -111,5 +128,10 @@ export class NzBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     if (nzColor) {
       this.presetColor = this.colorArray.indexOf(this.nzColor) !== -1 ? this.nzColor : null;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

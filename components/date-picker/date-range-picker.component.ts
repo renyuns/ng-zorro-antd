@@ -6,24 +6,13 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-  TemplateRef
-} from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef } from '@angular/core';
 
-import { toBoolean, valueFunctionProp, FunctionProp, InputBoolean, NzNoAnimationDirective } from 'ng-zorro-antd/core';
+import { CandyDate, FunctionProp, InputBoolean, NzNoAnimationDirective, toBoolean, valueFunctionProp } from 'ng-zorro-antd/core';
 import { DateHelperService, NzI18nService } from 'ng-zorro-antd/i18n';
 
-import { AbstractPickerComponent, CompatibleDate } from './abstract-picker.component';
-import { CandyDate } from './lib/candy-date/candy-date';
-import { DisabledTimeFn, PanelMode, PresetRanges } from './standard-types';
+import { AbstractPickerComponent } from './abstract-picker.component';
+import { CompatibleDate, DisabledTimeFn, PanelMode, PresetRanges } from './standard-types';
 
 @Component({
   template: `` // Just for rollup
@@ -58,12 +47,7 @@ export class DateRangePickerComponent extends AbstractPickerComponent implements
   pickerStyle: object; // Final picker style that contains width fix corrections etc.
   extraFooter: TemplateRef<void> | string;
 
-  constructor(
-    i18n: NzI18nService,
-    cdr: ChangeDetectorRef,
-    dateHelper: DateHelperService,
-    noAnimation?: NzNoAnimationDirective
-  ) {
+  constructor(i18n: NzI18nService, cdr: ChangeDetectorRef, dateHelper: DateHelperService, noAnimation?: NzNoAnimationDirective) {
     super(i18n, cdr, dateHelper, noAnimation);
   }
 
@@ -96,11 +80,13 @@ export class DateRangePickerComponent extends AbstractPickerComponent implements
     }
   }
 
-  // If has no timepicker and the user select a date by date panel, then close picker
-  onValueChange(value: CandyDate): void {
+  /**
+   * If user press 'Enter' in input box or `nzShowTime` is false, overlay will close.
+   */
+  onValueChange(value: CandyDate, isEnter: boolean = false): void {
     super.onValueChange(value);
 
-    if (!this.nzShowTime) {
+    if (!this.nzShowTime || isEnter) {
       this.closeOverlay();
     }
   }

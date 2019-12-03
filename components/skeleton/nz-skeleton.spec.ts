@@ -76,7 +76,10 @@ describe('skeleton', () => {
         expect(dl.query(By.css(`.ant-skeleton-avatar-${type}`)) !== null).toBe(true);
       });
     }
-    for (const type of [{ size: 'large', cls: 'lg' }, { size: 'small', cls: 'sm' }]) {
+    for (const type of [
+      { size: 'large', cls: 'lg' },
+      { size: 'small', cls: 'sm' }
+    ]) {
       it(`should customize size ${type.size} work`, () => {
         testComp.nzAvatar = { size: type.size } as NzSkeletonAvatar;
         fixture.detectChanges();
@@ -132,10 +135,8 @@ describe('skeleton', () => {
 });
 
 @Component({
-  selector: 'nz-test-skeleton',
   template: `
-    <nz-skeleton [nzActive]="nzActive" [nzAvatar]="nzAvatar" [nzTitle]="nzTitle" [nzParagraph]="nzParagraph">
-    </nz-skeleton>
+    <nz-skeleton [nzActive]="nzActive" [nzAvatar]="nzAvatar" [nzTitle]="nzTitle" [nzParagraph]="nzParagraph"> </nz-skeleton>
   `
 })
 export class NzTestSkeletonComponent {

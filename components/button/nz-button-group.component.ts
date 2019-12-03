@@ -7,7 +7,6 @@
  */
 
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
-
 import { NzSizeLDSType, NzUpdateHostClassService } from 'ng-zorro-antd/core';
 
 @Component({
@@ -20,6 +19,9 @@ import { NzSizeLDSType, NzUpdateHostClassService } from 'ng-zorro-antd/core';
   templateUrl: './nz-button-group.component.html'
 })
 export class NzButtonGroupComponent implements OnInit {
+  private _size: NzSizeLDSType;
+  isInDropdown = false;
+
   @Input()
   get nzSize(): NzSizeLDSType {
     return this._size;
@@ -32,14 +34,13 @@ export class NzButtonGroupComponent implements OnInit {
 
   constructor(private nzUpdateHostClassService: NzUpdateHostClassService, private elementRef: ElementRef) {}
 
-  private _size: NzSizeLDSType;
-  private prefixCls = 'ant-btn-group';
-
   setClassMap(): void {
+    const prefixCls = 'ant-btn-group';
     const classMap = {
-      [this.prefixCls]: true,
-      [`${this.prefixCls}-lg`]: this.nzSize === 'large',
-      [`${this.prefixCls}-sm`]: this.nzSize === 'small'
+      [prefixCls]: true,
+      [`ant-dropdown-button`]: this.isInDropdown,
+      [`${prefixCls}-lg`]: this.nzSize === 'large',
+      [`${prefixCls}-sm`]: this.nzSize === 'small'
     };
     this.nzUpdateHostClassService.updateHostClass(this.elementRef.nativeElement, classMap);
   }

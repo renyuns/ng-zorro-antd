@@ -1,7 +1,9 @@
 ---
-order: 9
+order: 10
 title: FAQ
 ---
+
+<blockquote style="border-color: #faad14;"><p>For more questions please search <a href="https://github.com/NG-ZORRO/ng-zorro-antd/issues?q=is%3Aopen+is%3Aissue+label%3A%22%3Aquestion%3A+FAQ%22" target="_blank">issues with FAQ tag</a>.</p></blockquote>
 
 ### Why some features are not supported?
 
@@ -37,7 +39,7 @@ Issue is designed for maintainers and users to track the development process of 
 
 ### Where can I get help with Angular?
 
-You can checkout the official docs and Angular forums. A good trick is to search on Google using `[keywords] -angular` to prevent `angularjs`'s interference. For example, you can type in `angular ngmodel -angularjs` to learn more about `ngModel` without struggling in out-dated Angular.js things.
+You can checkout the official docs and Angular forums. A good trick is to search on Google using `[keywords] -angularjs` to prevent `angularjs`'s interference. For example, you can type in `angular ngmodel -angularjs` to learn more about `ngModel` without struggling in out-dated Angular.js things.
 
 ### Relationship between NG-ZORRO and Ant Design
 

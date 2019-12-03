@@ -5,14 +5,8 @@ import { Component, ViewEncapsulation } from '@angular/core';
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="example-input">
-      <input
-        placeholder="try to type \`b\`"
-        nz-input
-        [(ngModel)]="inputValue"
-        (input)="onInput($event.target?.value)"
-        [nzAutocomplete]="auto"
-      />
-      <nz-autocomplete [nzDataSource]="filteredOptions" #auto> </nz-autocomplete>
+      <input placeholder="try to type \`b\`" nz-input [(ngModel)]="inputValue" (ngModelChange)="onChange($event)" [nzAutocomplete]="auto" />
+      <nz-autocomplete [nzDataSource]="filteredOptions" #auto></nz-autocomplete>
     </div>
   `
 })
@@ -25,7 +19,7 @@ export class NzDemoAutoCompleteNonCaseSensitiveComponent {
     this.filteredOptions = this.options;
   }
 
-  onInput(value: string): void {
-    this.filteredOptions = this.options.filter(option => option.toLowerCase().indexOf(value.toLowerCase()) === 0);
+  onChange(value: string): void {
+    this.filteredOptions = this.options.filter(option => option.toLowerCase().indexOf(value.toLowerCase()) !== -1);
   }
 }

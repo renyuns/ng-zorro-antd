@@ -22,12 +22,9 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Params, PRIMARY_OUTLET, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { startWith } from 'rxjs/internal/operators/startWith';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, startWith, takeUntil } from 'rxjs/operators';
 
-import { InputBoolean } from 'ng-zorro-antd/core';
-
-export const NZ_ROUTE_DATA_BREADCRUMB = 'breadcrumb';
+import { InputBoolean, PREFIX } from 'ng-zorro-antd/core';
 
 export interface BreadcrumbOption {
   label: string;
@@ -53,6 +50,7 @@ export interface BreadcrumbOption {
 export class NzBreadCrumbComponent implements OnInit, OnDestroy {
   @Input() @InputBoolean() nzAutoGenerate = false;
   @Input() nzSeparator: string | TemplateRef<void> = '/';
+  @Input() nzRouteLabel: string = 'breadcrumb';
 
   breadcrumbs: BreadcrumbOption[] | undefined = [];
 
@@ -107,15 +105,11 @@ export class NzBreadCrumbComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         });
     } catch (e) {
-      throw new Error('[NG-ZORRO] You should import RouterModule if you want to use `NzAutoGenerate`');
+      throw new Error(`${PREFIX} You should import RouterModule if you want to use 'NzAutoGenerate'.`);
     }
   }
 
-  private getBreadcrumbs(
-    route: ActivatedRoute,
-    url: string = '',
-    breadcrumbs: BreadcrumbOption[] = []
-  ): BreadcrumbOption[] | undefined {
+  private getBreadcrumbs(route: ActivatedRoute, url: string = '', breadcrumbs: BreadcrumbOption[] = []): BreadcrumbOption[] | undefined {
     const children: ActivatedRoute[] = route.children;
     // If there's no sub root, then stop the recurse and returns the generated breadcrumbs.
     if (children.length === 0) {
@@ -127,7 +121,7 @@ export class NzBreadCrumbComponent implements OnInit, OnDestroy {
         // Parse this layer and generate a breadcrumb item.
         const routeURL: string = child.snapshot.url.map(segment => segment.path).join('/');
         const nextUrl = url + `/${routeURL}`;
-        const breadcrumbLabel = child.snapshot.data[NZ_ROUTE_DATA_BREADCRUMB];
+        const breadcrumbLabel = child.snapshot.data[this.nzRouteLabel];
         // If have data, go to generate a breadcrumb for it.
         if (routeURL && breadcrumbLabel) {
           const breadcrumb: BreadcrumbOption = {

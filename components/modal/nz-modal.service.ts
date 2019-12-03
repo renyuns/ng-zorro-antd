@@ -11,11 +11,12 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { ComponentRef, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { IndexableObject, LoggerService } from 'ng-zorro-antd/core';
+import { IndexableObject, warn } from 'ng-zorro-antd/core';
 
 import { NzModalControlService } from './nz-modal-control.service';
 import { NzModalRef } from './nz-modal-ref.class';
 import { NzModalComponent } from './nz-modal.component';
+import { NzModalServiceModule } from './nz-modal.service.module';
 import { ConfirmType, ModalOptions, ModalOptionsForService } from './nz-modal.type';
 
 // A builder used for managing service creating modals
@@ -61,7 +62,9 @@ export class ModalBuilderForService {
   }
 }
 
-@Injectable()
+@Injectable({
+  providedIn: NzModalServiceModule
+})
 export class NzModalService {
   // Track of the current close modals (we assume invisible is close this time)
   get openModals(): NzModalRef[] {
@@ -72,7 +75,7 @@ export class NzModalService {
     return this.modalControl.afterAllClose.asObservable();
   }
 
-  constructor(private overlay: Overlay, private logger: LoggerService, private modalControl: NzModalControlService) {}
+  constructor(private overlay: Overlay, private modalControl: NzModalControlService) {}
 
   // Closes all of the currently-open dialogs
   closeAll(): void {
@@ -92,10 +95,13 @@ export class NzModalService {
 
   confirm<T>(options: ModalOptionsForService<T> = {}, confirmType: ConfirmType = 'confirm'): NzModalRef<T> {
     if ('nzFooter' in options) {
-      this.logger.warn(`The Confirm-Modal doesn't support "nzFooter", this property will be ignored.`);
+      warn(`The Confirm-Modal doesn't support "nzFooter", this property will be ignored.`);
     }
     if (!('nzWidth' in options)) {
       options.nzWidth = 416;
+    }
+    if (!('nzMaskClosable' in options)) {
+      options.nzMaskClosable = false;
     }
     if (typeof options.nzOnOk !== 'function') {
       // NOTE: only support function currently by calling confirm()
@@ -104,7 +110,6 @@ export class NzModalService {
 
     options.nzModalType = 'confirm';
     options.nzClassName = `ant-modal-confirm ant-modal-confirm-${confirmType} ${options.nzClassName || ''}`;
-    options.nzMaskClosable = false;
     return this.create(options);
   }
 

@@ -18,11 +18,11 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 
-import { isNotNil, InputBoolean, NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import { InputBoolean, isNotNil, NzUpdateHostClassService } from 'ng-zorro-antd/core';
 
 @Component({
   // tslint:disable-next-line:component-selector
-  selector: 'td:not(.nz-disable-td)',
+  selector: 'td:not(.nz-disable-td):not([mat-cell])',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [NzUpdateHostClassService],
   preserveWhitespaces: false,
@@ -31,7 +31,8 @@ import { isNotNil, InputBoolean, NzUpdateHostClassService } from 'ng-zorro-antd/
   host: {
     '[style.left]': 'nzLeft',
     '[style.right]': 'nzRight',
-    '[style.text-align]': 'nzAlign'
+    '[style.text-align]': 'nzAlign',
+    '[style.word-break]': `nzBreakWord ? 'break-all' : ''`
   }
 })
 export class NzTdComponent implements OnChanges {
@@ -45,6 +46,7 @@ export class NzTdComponent implements OnChanges {
   @Input() @InputBoolean() nzExpand = false;
   @Input() @InputBoolean() nzShowExpand = false;
   @Input() @InputBoolean() nzShowCheckbox = false;
+  @Input() @InputBoolean() nzBreakWord = false;
   @Output() readonly nzCheckedChange = new EventEmitter<boolean>();
   @Output() readonly nzExpandChange = new EventEmitter<boolean>();
 

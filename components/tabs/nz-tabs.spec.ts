@@ -1,7 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component, DebugElement, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { NGStyleInterface } from 'ng-zorro-antd/core';
+import { Router, Routes } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+
+import { NgStyleInterface } from 'ng-zorro-antd/core';
 
 import { NzTabsModule } from './nz-tabs.module';
 import { NzAnimatedInterface, NzTabSetComponent } from './nz-tabset.component';
@@ -112,9 +116,7 @@ describe('tabs', () => {
       testComponent.hideAll = true;
       fixture.detectChanges();
       expect(tabs.nativeElement.querySelector('.ant-tabs-tabpane').classList).toContain('ant-tabs-tabpane-inactive');
-      expect(tabs.nativeElement.querySelector('.ant-tabs-ink-bar').attributes.getNamedItem('hidden').name).toBe(
-        'hidden'
-      );
+      expect(tabs.nativeElement.querySelector('.ant-tabs-ink-bar').attributes.getNamedItem('hidden').name).toBe('hidden');
     });
 
     it('should title work', () => {
@@ -124,12 +126,13 @@ describe('tabs', () => {
       expect(titles[1].innerText).toBe('template');
     });
 
-    it('should content work', () => {
+    it('should content work', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
       fixture.detectChanges();
       const contents = tabs.nativeElement.querySelectorAll('.ant-tabs-tabpane');
       expect(contents[0].innerText).toBe('Content 1');
-      expect(contents[1].innerText).toBe('Content 2');
-    });
+    }));
 
     it('should selectedIndex work', fakeAsync(() => {
       fixture.detectChanges();
@@ -473,15 +476,73 @@ describe('tabs', () => {
       tick();
       fixture.detectChanges();
       const tabs = fixture.debugElement.query(By.directive(NzTabSetComponent));
-      expect(tabs.nativeElement.querySelector('.ant-tabs-nav-container').classList).not.toContain(
-        'ant-tabs-nav-container-scrolling'
-      );
+      expect(tabs.nativeElement.querySelector('.ant-tabs-nav-container').classList).not.toContain('ant-tabs-nav-container-scrolling');
     }));
   });
 });
 
+describe('link router', () => {
+  let fixture: ComponentFixture<NzTestTabsLinkRouterComponent>;
+  let tabs: DebugElement;
+  let router: Router;
+
+  describe('basic', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        imports: [CommonModule, NzTabsModule, RouterTestingModule.withRoutes(routes)],
+        declarations: [NzTestTabsLinkRouterComponent]
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(NzTestTabsLinkRouterComponent);
+      fixture.detectChanges();
+
+      tabs = fixture.debugElement.query(By.directive(NzTabSetComponent));
+    });
+
+    it('should child route mode works', fakeAsync(() => {
+      fixture.ngZone!.run(() => {
+        router = TestBed.get(Router);
+        router.initialNavigation();
+
+        fixture.detectChanges();
+        expect((tabs.componentInstance as NzTabSetComponent).nzSelectedIndex).toBe(0);
+
+        router.navigate(['.', 'two']);
+        fixture.detectChanges();
+        tick(200);
+        fixture.detectChanges();
+        expect((tabs.componentInstance as NzTabSetComponent).nzSelectedIndex).toBe(1);
+
+        flush();
+        // const titles = tabs.nativeElement.querySelectorAll('.ant-tabs-tab');
+        // titles[0].click();
+        // fixture.detectChanges();
+        // tick(200);
+        // fixture.detectChanges();
+        // expect(location.path()).toBe('/');
+      });
+    }));
+  });
+
+  describe('throw error', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        imports: [NzTabsModule],
+        declarations: [NzTestTabsLinkRouterComponent]
+      });
+    });
+
+    it('should raise error when routerModule is not imported', () => {
+      expect(() => {
+        TestBed.compileComponents();
+        fixture = TestBed.createComponent(NzTestTabsLinkRouterComponent);
+        fixture.detectChanges();
+      }).toThrowError();
+    });
+  });
+});
+
 @Component({
-  selector: 'nz-test-tabs-basic',
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['../style/index.less', './style/index.less'],
   template: `
@@ -501,12 +562,7 @@ describe('tabs', () => {
         [nzTabBarGutter]="tabBarGutter"
         [nzHideAll]="hideAll"
       >
-        <nz-tab
-          nzTitle="title"
-          [nzForceRender]="true"
-          (nzDeselect)="deselect00()"
-          (nzSelect)="select00()"
-          (nzClick)="click00()"
+        <nz-tab nzTitle="title" [nzForceRender]="true" (nzDeselect)="deselect00()" (nzSelect)="select00()" (nzClick)="click00()"
           >Content 1<!----></nz-tab
         >
         <nz-tab
@@ -520,13 +576,7 @@ describe('tabs', () => {
           Content 2<!---->
           <button></button>
         </nz-tab>
-        <nz-tab
-          [nzForceRender]="true"
-          nzTitle="add"
-          *ngIf="add"
-          (nzDeselect)="deselect02()"
-          (nzSelect)="select02()"
-          (nzClick)="click02()"
+        <nz-tab [nzForceRender]="true" nzTitle="add" *ngIf="add" (nzDeselect)="deselect02()" (nzSelect)="select02()" (nzClick)="click02()"
           >add
         </nz-tab>
         <nz-tab *ngFor="let i of array" [nzTitle]="i"></nz-tab>
@@ -536,15 +586,15 @@ describe('tabs', () => {
 })
 export class NzTestTabsBasicComponent {
   add = false;
-  @ViewChild('extraTemplate') extraTemplate: TemplateRef<void>;
-  @ViewChild(NzTabSetComponent) nzTabSetComponent: NzTabSetComponent;
+  @ViewChild('extraTemplate', { static: false }) extraTemplate: TemplateRef<void>;
+  @ViewChild(NzTabSetComponent, { static: false }) nzTabSetComponent: NzTabSetComponent;
   selectedIndex = 0;
   selectedIndexChange = jasmine.createSpy('selectedIndex callback');
   selectChange = jasmine.createSpy('selectedIndex callback');
   animated: NzAnimatedInterface | boolean = true;
   size = 'default';
   tabBarExtraContent: TemplateRef<void>;
-  tabBarStyle: NGStyleInterface;
+  tabBarStyle: NgStyleInterface;
   tabPosition = 'top';
   type = 'line';
   tabBarGutter: number;
@@ -566,7 +616,6 @@ export class NzTestTabsBasicComponent {
 
 /** https://github.com/NG-ZORRO/ng-zorro-antd/issues/1964 **/
 @Component({
-  selector: 'nz-test-tabs-tab-position-left',
   template: `
     <nz-tabset nzTabPosition="left">
       <nz-tab *ngFor="let tab of tabs" [nzTitle]="'Tab' + tab"> Content of tab {{ tab }} </nz-tab>
@@ -576,3 +625,37 @@ export class NzTestTabsBasicComponent {
 export class NzTestTabsTabPositionLeftComponent {
   tabs = [1, 2, 3];
 }
+
+@Component({
+  template: `
+    <nz-tabset nzLinkRouter>
+      <nz-tab nzTitle="default">
+        <a nz-tab-link [routerLink]="['.']">One</a>
+        One
+      </nz-tab>
+      <nz-tab nzTitle="two">
+        <a nz-tab-link [routerLink]="['.', 'two']">Two</a>
+        Two
+      </nz-tab>
+    </nz-tabset>
+    <router-outlet></router-outlet>
+  `
+})
+export class NzTestTabsLinkRouterComponent {}
+
+const routes: Routes = [
+  {
+    path: '',
+    component: NzTestTabsLinkRouterComponent,
+    data: {
+      path: ''
+    }
+  },
+  {
+    path: 'two',
+    component: NzTestTabsLinkRouterComponent,
+    data: {
+      path: 'two'
+    }
+  }
+];

@@ -24,7 +24,7 @@ import {
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { zoomMotion, NzNoAnimationDirective } from 'ng-zorro-antd/core';
+import { NzNoAnimationDirective, zoomMotion } from 'ng-zorro-antd/core';
 
 import { NzOptionComponent } from './nz-option.component';
 import { NzSelectService } from './nz-select.service';
@@ -42,7 +42,8 @@ export class NzSelectTopControlComponent implements OnInit, OnDestroy {
   inputValue: string;
   isComposing = false;
   private destroy$ = new Subject();
-  @ViewChild('inputElement') inputElement: ElementRef;
+  @ViewChild('inputElement', { static: false }) inputElement: ElementRef;
+  @ViewChild('mirrorElement', { static: false }) mirrorElement: ElementRef;
   @Input() nzShowSearch = false;
   @Input() nzPlaceHolder: string;
   @Input() nzOpen = false;
@@ -50,6 +51,7 @@ export class NzSelectTopControlComponent implements OnInit, OnDestroy {
   @Input() nzAllowClear = false;
   @Input() nzShowArrow = true;
   @Input() nzLoading = false;
+  @Input() nzCustomTemplate: TemplateRef<{ $implicit: NzOptionComponent }>;
   @Input() nzSuffixIcon: TemplateRef<void>;
   @Input() nzClearIcon: TemplateRef<void>;
   @Input() nzRemoveIcon: TemplateRef<void>;
@@ -63,13 +65,22 @@ export class NzSelectTopControlComponent implements OnInit, OnDestroy {
   }
 
   setInputValue(value: string): void {
-    if (this.inputElement) {
-      this.inputElement.nativeElement.value = value;
+    /** fix clear value https://github.com/NG-ZORRO/ng-zorro-antd/issues/3825 **/
+    if (this.inputDOM && !value) {
+      this.inputDOM.value = value;
     }
     this.inputValue = value;
     this.updateWidth();
     this.nzSelectService.updateSearchValue(value);
     this.nzSelectService.tokenSeparate(this.inputValue, this.nzTokenSeparators);
+  }
+
+  get mirrorDOM(): HTMLElement {
+    return this.mirrorElement && this.mirrorElement.nativeElement;
+  }
+
+  get inputDOM(): HTMLInputElement {
+    return this.inputElement && this.inputElement.nativeElement;
   }
 
   get placeHolderDisplay(): string {
@@ -103,22 +114,23 @@ export class NzSelectTopControlComponent implements OnInit, OnDestroy {
   }
 
   updateWidth(): void {
-    if (this.nzSelectService.isMultipleOrTags && this.inputElement) {
-      if (this.inputValue || this.isComposing) {
-        this.renderer.setStyle(
-          this.inputElement.nativeElement,
-          'width',
-          `${this.inputElement.nativeElement.scrollWidth}px`
-        );
-      } else {
-        this.renderer.removeStyle(this.inputElement.nativeElement, 'width');
-      }
+    if (this.mirrorDOM && this.inputDOM && this.inputDOM.value) {
+      this.mirrorDOM.innerText = `${this.inputDOM.value}&nbsp;`;
+      this.renderer.removeStyle(this.inputDOM, 'width');
+      this.renderer.setStyle(this.inputDOM, 'width', `${this.mirrorDOM.clientWidth}px`);
+    } else if (this.inputDOM) {
+      this.renderer.removeStyle(this.inputDOM, 'width');
+      this.mirrorDOM.innerText = '';
     }
   }
 
   removeSelectedValue(option: NzOptionComponent, e: MouseEvent): void {
     this.nzSelectService.removeValueFormSelected(option);
     e.stopPropagation();
+  }
+
+  animationEnd(): void {
+    this.nzSelectService.animationEvent$.next();
   }
 
   constructor(
@@ -131,7 +143,7 @@ export class NzSelectTopControlComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.nzSelectService.open$.pipe(takeUntil(this.destroy$)).subscribe(open => {
       if (this.inputElement && open) {
-        setTimeout(() => this.inputElement.nativeElement.focus());
+        setTimeout(() => this.inputDOM.focus());
       }
     });
     this.nzSelectService.clearInput$.pipe(takeUntil(this.destroy$)).subscribe(() => {

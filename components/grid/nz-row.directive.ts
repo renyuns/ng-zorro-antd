@@ -6,49 +6,16 @@
  * found in the LICENSE file at https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE
  */
 
-import {
-  AfterViewInit,
-  Directive,
-  ElementRef,
-  Input,
-  NgZone,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Renderer2,
-  SimpleChanges
-} from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, Input, NgZone, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Platform } from '@angular/cdk/platform';
-import { fromEvent, Subject } from 'rxjs';
-import { auditTime, takeUntil } from 'rxjs/operators';
-
-import { IndexableObject, NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import { IndexableObject, NzAlignType, NzBreakPoint, NzDomEventService, NzUpdateHostClassService, responsiveMap } from 'ng-zorro-antd/core';
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 export type NzJustify = 'start' | 'end' | 'center' | 'space-around' | 'space-between';
-export type NzAlign = 'top' | 'middle' | 'bottom';
-export type NzType = 'flex' | null;
-
-export enum Breakpoint {
-  'xxl',
-  'xl',
-  'lg',
-  'md',
-  'sm',
-  'xs'
-}
-
-export type BreakpointMap = { [index in keyof typeof Breakpoint]: string };
-
-const responsiveMap: BreakpointMap = {
-  xs: '(max-width: 575px)',
-  sm: '(min-width: 576px)',
-  md: '(min-width: 768px)',
-  lg: '(min-width: 992px)',
-  xl: '(min-width: 1200px)',
-  xxl: '(min-width: 1600px)'
-};
+export type NzGridType = 'flex' | null;
 
 @Directive({
   selector: '[nz-row],nz-row',
@@ -56,13 +23,13 @@ const responsiveMap: BreakpointMap = {
   providers: [NzUpdateHostClassService]
 })
 export class NzRowDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-  @Input() nzType: NzType;
-  @Input() nzAlign: NzAlign = 'top';
+  @Input() nzType: NzGridType;
+  @Input() nzAlign: NzAlignType = 'top';
   @Input() nzJustify: NzJustify = 'start';
   @Input() nzGutter: number | IndexableObject;
   private el: HTMLElement = this.elementRef.nativeElement;
   private prefixCls = 'ant-row';
-  private breakPoint: Breakpoint;
+  private breakPoint: NzBreakPoint;
   actualGutter: number;
   actualGutter$ = new Subject<number>();
   destroy$ = new Subject();
@@ -88,11 +55,11 @@ export class NzRowDirective implements OnInit, OnChanges, AfterViewInit, OnDestr
   }
 
   watchMedia(): void {
-    // @ts-ignore
-    Object.keys(responsiveMap).map((screen: Breakpoint) => {
-      const matchBelow = this.mediaMatcher.matchMedia(responsiveMap[screen]).matches;
+    Object.keys(responsiveMap).map((screen: string) => {
+      const castBP = screen as NzBreakPoint;
+      const matchBelow = this.mediaMatcher.matchMedia(responsiveMap[castBP]).matches;
       if (matchBelow) {
-        this.breakPoint = screen;
+        this.breakPoint = castBP;
       }
     });
     this.updateGutter();
@@ -115,7 +82,8 @@ export class NzRowDirective implements OnInit, OnChanges, AfterViewInit, OnDestr
     public nzUpdateHostClassService: NzUpdateHostClassService,
     public mediaMatcher: MediaMatcher,
     public ngZone: NgZone,
-    public platform: Platform
+    public platform: Platform,
+    private nzDomEventService: NzDomEventService
   ) {}
 
   ngOnInit(): void {
@@ -134,14 +102,13 @@ export class NzRowDirective implements OnInit, OnChanges, AfterViewInit, OnDestr
 
   ngAfterViewInit(): void {
     if (this.platform.isBrowser) {
-      this.ngZone.runOutsideAngular(() => {
-        fromEvent(window, 'resize')
-          .pipe(
-            auditTime(16),
-            takeUntil(this.destroy$)
-          )
-          .subscribe(() => this.watchMedia());
-      });
+      this.nzDomEventService
+        .registerResizeListener()
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => this.nzDomEventService.unregisterResizeListener())
+        )
+        .subscribe(() => this.watchMedia());
     }
   }
 

@@ -1,7 +1,9 @@
 import { Component, DebugElement, TemplateRef, ViewChild } from '@angular/core';
-import { fakeAsync, tick, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+
+import { NzIconTestModule } from 'ng-zorro-antd/icon/testing';
 
 import { NzAlertComponent } from './nz-alert.component';
 import { NzAlertModule } from './nz-alert.module';
@@ -9,7 +11,7 @@ import { NzAlertModule } from './nz-alert.module';
 describe('alert', () => {
   beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NzAlertModule, NoopAnimationsModule],
+      imports: [NzAlertModule, NoopAnimationsModule, NzIconTestModule],
       declarations: [NzDemoTestBasicComponent, NzDemoTestBannerComponent]
     });
     TestBed.compileComponents();
@@ -85,7 +87,7 @@ describe('alert', () => {
     it('should iconType work', () => {
       fixture.detectChanges();
       testComponent.showIcon = true;
-      testComponent.iconType = 'anticon anticon-lock';
+      testComponent.iconType = 'lock';
       fixture.detectChanges();
       expect(alert.nativeElement.querySelector('.ant-alert-icon').classList).toContain('anticon');
       expect(alert.nativeElement.querySelector('.ant-alert-icon').classList).toContain('anticon-lock');
@@ -118,7 +120,6 @@ describe('alert', () => {
 });
 
 @Component({
-  selector: 'nz-test-alert-basic',
   template: `
     <ng-template #template>template</ng-template>
     <nz-alert
@@ -136,7 +137,7 @@ describe('alert', () => {
   `
 })
 export class NzDemoTestBasicComponent {
-  @ViewChild('template') template: TemplateRef<void>;
+  @ViewChild('template', { static: false }) template: TemplateRef<void>;
   banner = false;
   closeable = false;
   closeText: string | TemplateRef<void>;
@@ -149,7 +150,6 @@ export class NzDemoTestBasicComponent {
 }
 
 @Component({
-  selector: 'nz-test-alert-banner',
   template: `
     <nz-alert nzBanner> </nz-alert>
   `

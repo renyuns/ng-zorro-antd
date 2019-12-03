@@ -27,10 +27,10 @@ import { distanceInWords } from 'date-fns';
         </nz-form-item>
       </nz-comment-content>
     </nz-comment>
-  `,
-  styles: []
+  `
 })
 export class NzDemoCommentEditorComponent {
+  // tslint:disable-next-line:no-any
   data: any[] = [];
   submitting = false;
   user = {

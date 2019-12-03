@@ -24,8 +24,13 @@ import {
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { isInteger, toNumber, InputBoolean, InputNumber } from 'ng-zorro-antd/core';
+import { InputBoolean, InputNumber, isInteger, toNumber } from 'ng-zorro-antd/core';
 import { NzI18nService } from 'ng-zorro-antd/i18n';
+
+export interface PaginationItemRenderContext {
+  $implicit: 'page' | 'prev' | 'next';
+  page: number;
+}
 
 @Component({
   selector: 'nz-pagination',
@@ -47,10 +52,14 @@ export class NzPaginationComponent implements OnInit, OnDestroy, OnChanges {
   @Input() nzInTable = false;
   @Input() nzSize: 'default' | 'small' = 'default';
   @Input() nzPageSizeOptions = [10, 20, 30, 40];
-  @Input() @ViewChild('renderItemTemplate') nzItemRender: TemplateRef<{
-    $implicit: 'page' | 'prev' | 'next';
-    page: number;
-  }>;
+
+  @Input() nzItemRender: TemplateRef<PaginationItemRenderContext>;
+  @ViewChild('renderItemTemplate', { static: true }) nzItemRenderChild: TemplateRef<PaginationItemRenderContext>;
+  get itemRender(): TemplateRef<PaginationItemRenderContext> {
+    return this.nzItemRender || this.nzItemRenderChild;
+  }
+
+  @Input() @InputBoolean() nzDisabled = false;
   @Input() @InputBoolean() nzShowSizeChanger = false;
   @Input() @InputBoolean() nzHideOnSinglePage = false;
   @Input() @InputBoolean() nzShowQuickJumper = false;
@@ -80,7 +89,7 @@ export class NzPaginationComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   jumpPage(index: number): void {
-    if (index !== this.nzPageIndex) {
+    if (index !== this.nzPageIndex && !this.nzDisabled) {
       const pageIndex = this.validatePageIndex(index);
       if (pageIndex !== this.nzPageIndex) {
         this.updatePageIndexValue(pageIndex);

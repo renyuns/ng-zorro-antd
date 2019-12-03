@@ -12,14 +12,13 @@ import {
   EventEmitter,
   Input,
   OnChanges,
-  OnInit,
   Output,
   SimpleChanges,
   ViewEncapsulation
 } from '@angular/core';
 
+import { CandyDate } from 'ng-zorro-antd/core';
 import { DateHelperByDatePipe, DateHelperService, NzCalendarI18nInterface } from 'ng-zorro-antd/i18n';
-import { CandyDate } from '../candy-date/candy-date';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -29,7 +28,7 @@ import { CandyDate } from '../candy-date/candy-date';
   exportAs: 'todayButton',
   templateUrl: 'today-button.component.html'
 })
-export class TodayButtonComponent implements OnInit, OnChanges {
+export class TodayButtonComponent implements OnChanges {
   @Input() locale: NzCalendarI18nInterface;
   @Input() hasTimePicker: boolean = false;
   @Input() disabledDate: (d: Date) => boolean;
@@ -43,8 +42,6 @@ export class TodayButtonComponent implements OnInit, OnChanges {
   private now: CandyDate = new CandyDate();
 
   constructor(private dateHelper: DateHelperService) {}
-
-  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.disabledDate) {

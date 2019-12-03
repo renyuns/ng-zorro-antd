@@ -128,7 +128,7 @@ function wrapperHeader(title, whenToUse, language, example, hasPageDemo, name) {
 	${hasPageDemo ? `<section class="page-demo"><nz-page-demo-${name}-${language}></nz-page-demo-${name}-${language}></section>` : ''}
 	<h2>
 		<span>${language === 'zh' ? '代码演示' : 'Examples'}</span>
-		<i nz-icon type="appstore" class="code-box-expand-trigger" nz-tooltip nzTitle="${language === 'zh' ? '展开全部代码' : 'Expand All Code'}" (click)="expandAllCode()"></i>
+		<i nz-icon nzType="appstore" class="code-box-expand-trigger" nz-tooltip nzTitle="${language === 'zh' ? '展开全部代码' : 'Expand All Code'}" (click)="expandAllCode()"></i>
 	</h2>
 </section>${example}`
   } else {
@@ -156,6 +156,7 @@ function generateToc(language, name, demoMap) {
     );
   }
   linkArray.sort((pre, next) => pre.order - next.order);
+  linkArray.push({ content: `<nz-link nzHref="#api" nzTitle="API"></nz-link>` });
   const links = linkArray.map(link => link.content).join('');
   return `<nz-affix class="toc-affix" [nzOffsetTop]="16">
     <nz-anchor [nzAffix]="false" nzShowInkInFixed (nzClick)="goLink($event)">

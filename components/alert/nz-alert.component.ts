@@ -17,7 +17,9 @@ import {
   TemplateRef,
   ViewEncapsulation
 } from '@angular/core';
-import { slideAlertMotion, InputBoolean, NgClassType } from 'ng-zorro-antd/core';
+import { InputBoolean, NgClassType, NzConfigService, slideAlertMotion, WithConfig } from 'ng-zorro-antd/core';
+
+const NZ_CONFIG_COMPONENT_NAME = 'alert';
 
 @Component({
   selector: 'nz-alert',
@@ -36,20 +38,29 @@ import { slideAlertMotion, InputBoolean, NgClassType } from 'ng-zorro-antd/core'
   ]
 })
 export class NzAlertComponent implements OnChanges {
-  destroy = false;
-  iconType = 'info-circle';
-  iconTheme = 'fill';
-  private isTypeSet = false;
-  private isShowIconSet = false;
   @Input() nzCloseText: string | TemplateRef<void>;
   @Input() nzIconType: NgClassType;
   @Input() nzMessage: string | TemplateRef<void>;
   @Input() nzDescription: string | TemplateRef<void>;
   @Input() nzType: 'success' | 'info' | 'warning' | 'error' = 'info';
-  @Input() @InputBoolean() nzCloseable = false;
-  @Input() @InputBoolean() nzShowIcon = false;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) @InputBoolean() nzCloseable: boolean;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, false) @InputBoolean() nzShowIcon: boolean;
   @Input() @InputBoolean() nzBanner = false;
   @Output() readonly nzOnClose = new EventEmitter<boolean>();
+
+  get iconType(): NgClassType {
+    return this.nzIconType || this.inferredIconType;
+  }
+
+  destroy = false;
+  iconTheme = 'fill';
+  isIconTypeObject = false;
+
+  private isTypeSet = false;
+  private isShowIconSet = false;
+  private inferredIconType: string = 'info-circle';
+
+  constructor(public nzConfigService: NzConfigService) {}
 
   closeAlert(): void {
     this.destroy = true;
@@ -64,32 +75,36 @@ export class NzAlertComponent implements OnChanges {
   updateIconClassMap(): void {
     switch (this.nzType) {
       case 'error':
-        this.iconType = 'close-circle';
+        this.inferredIconType = 'close-circle';
         break;
       case 'success':
-        this.iconType = 'check-circle';
+        this.inferredIconType = 'check-circle';
         break;
       case 'info':
-        this.iconType = 'info-circle';
+        this.inferredIconType = 'info-circle';
         break;
       case 'warning':
-        this.iconType = 'exclamation-circle';
+        this.inferredIconType = 'exclamation-circle';
         break;
     }
     this.iconTheme = this.nzDescription ? 'outline' : 'fill';
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const { nzShowIcon, nzDescription, nzType, nzBanner } = changes;
+    const { nzShowIcon, nzDescription, nzType, nzBanner, nzIconType } = changes;
+
     if (nzShowIcon) {
       this.isShowIconSet = true;
     }
+
     if (nzDescription || nzType) {
       this.updateIconClassMap();
     }
+
     if (nzType) {
       this.isTypeSet = true;
     }
+
     if (nzBanner) {
       if (!this.isTypeSet) {
         this.nzType = 'warning';
@@ -97,6 +112,10 @@ export class NzAlertComponent implements OnChanges {
       if (!this.isShowIconSet) {
         this.nzShowIcon = true;
       }
+    }
+
+    if (nzIconType) {
+      this.isIconTypeObject = typeof nzIconType.currentValue === 'object';
     }
   }
 }

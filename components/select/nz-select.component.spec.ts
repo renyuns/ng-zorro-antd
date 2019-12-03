@@ -1,10 +1,10 @@
 import { DOWN_ARROW, ENTER, ESCAPE, SPACE, TAB, UP_ARROW } from '@angular/cdk/keycodes';
-import { Component, DebugElement } from '@angular/core';
-import { async, fakeAsync, flush, inject, tick, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Component, DebugElement, NgZone } from '@angular/core';
+import { async, ComponentFixture, fakeAsync, flush, inject, TestBed, tick } from '@angular/core/testing';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { dispatchKeyboardEvent } from 'ng-zorro-antd/core';
+import { dispatchKeyboardEvent, MockNgZone } from 'ng-zorro-antd/core';
 import { NzOptionComponent } from './nz-option.component';
 
 import { OverlayContainer } from '@angular/cdk/overlay';
@@ -15,6 +15,8 @@ import { NzSelectModule } from './nz-select.module';
 describe('nz-select component', () => {
   let overlayContainer: OverlayContainer;
   let overlayContainerElement: HTMLElement;
+  let zone: MockNgZone;
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [NzSelectModule, NoopAnimationsModule, FormsModule, ReactiveFormsModule],
@@ -24,6 +26,15 @@ describe('nz-select component', () => {
         NzTestSelectFormComponent,
         NzTestOptionChangeComponent,
         NzTestSelectFormDisabledTouchedComponent
+      ],
+      providers: [
+        {
+          provide: NgZone,
+          useFactory: () => {
+            zone = new MockNgZone();
+            return zone;
+          }
+        }
       ]
     });
     TestBed.compileComponents();
@@ -101,27 +112,17 @@ describe('nz-select component', () => {
       expect(testComponent.open).toBe(false);
       expect(testComponent.openChange).toHaveBeenCalledTimes(0);
     }));
-    it('should autofocus work', () => {
-      testComponent.showSearch = true;
-      fixture.detectChanges();
-      testComponent.autoFocus = true;
-      fixture.detectChanges();
-      expect(select.nativeElement.querySelector('input').attributes.getNamedItem('autofocus').name).toBe('autofocus');
-      testComponent.autoFocus = false;
-      fixture.detectChanges();
-      expect(select.nativeElement.querySelector('input').attributes.getNamedItem('autofocus')).toBe(null);
-    });
     it('should focus and blur function work', () => {
       testComponent.showSearch = true;
       select.nativeElement.click();
       fixture.detectChanges();
-      expect(select.nativeElement.querySelector('input') === document.activeElement).toBe(false);
-      selectComponent.focus();
-      fixture.detectChanges();
-      expect(select.nativeElement.querySelector('input') === document.activeElement).toBe(true);
+      expect(select.nativeElement.querySelector('.ant-select-selection') === document.activeElement).toBe(true);
       selectComponent.blur();
       fixture.detectChanges();
-      expect(select.nativeElement.querySelector('input') === document.activeElement).toBe(false);
+      expect(select.nativeElement.querySelector('.ant-select-selection') === document.activeElement).toBe(false);
+      selectComponent.focus();
+      fixture.detectChanges();
+      expect(select.nativeElement.querySelector('.ant-select-selection') === document.activeElement).toBe(true);
     });
     it('should dropdown class work', () => {
       fixture.detectChanges();
@@ -144,6 +145,8 @@ describe('nz-select component', () => {
       fixture.detectChanges();
       tick();
       fixture.detectChanges();
+      zone.simulateZoneExit();
+      fixture.detectChanges();
       expect(testComponent.open).toBe(true);
       const targetElement = overlayContainerElement.querySelector('.cdk-overlay-pane') as HTMLElement;
       expect(targetElement.style.width).toBe('10px');
@@ -157,11 +160,25 @@ describe('nz-select component', () => {
       fixture.detectChanges();
       tick();
       fixture.detectChanges();
+      zone.simulateZoneExit();
+      fixture.detectChanges();
       expect(testComponent.open).toBe(true);
       const targetElement = overlayContainerElement.querySelector('.cdk-overlay-pane') as HTMLElement;
       expect(targetElement.style.width).toBe('');
       expect(targetElement.style.minWidth).toBe('10px');
     }));
+    it('should custom template work', () => {
+      select.nativeElement.click();
+      fixture.detectChanges();
+      expect(testComponent.open).toBe(true);
+      fixture.detectChanges();
+      overlayContainerElement.querySelector('li')!.click();
+      fixture.detectChanges();
+      zone.simulateZoneExit();
+      fixture.detectChanges();
+      const selection = select.nativeElement.querySelector('.ant-select-selection') as HTMLElement;
+      expect(selection.textContent).toContain('Label: JackValue: jack');
+    });
     it('should click option close dropdown', () => {
       testComponent.showSearch = true;
       select.nativeElement.click();
@@ -236,6 +253,38 @@ describe('nz-select component', () => {
       fixture.detectChanges();
       expect(testComponent.open).toBe(false);
     }));
+    it('should skip disabled or hidden options on keydown events', fakeAsync(() => {
+      fixture.detectChanges();
+      select.nativeElement.click();
+      fixture.detectChanges();
+      overlayContainerElement.querySelector('li')!.click();
+      fixture.detectChanges();
+      flush();
+      fixture.detectChanges();
+      expect(testComponent.selectedValue).toBe('jack');
+      select.nativeElement.click();
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', UP_ARROW);
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', ENTER);
+      fixture.detectChanges();
+      flush();
+      fixture.detectChanges();
+      expect(testComponent.selectedValue).toBe('lucy');
+      select.nativeElement.click();
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', UP_ARROW);
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', DOWN_ARROW);
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', DOWN_ARROW);
+      fixture.detectChanges();
+      dispatchKeyboardEvent(select.nativeElement.querySelector('.ant-select-selection'), 'keydown', ENTER);
+      fixture.detectChanges();
+      flush();
+      fixture.detectChanges();
+      expect(testComponent.selectedValue).toBe('jack');
+    }));
   });
   describe('tags', () => {
     let fixture: ComponentFixture<NzTestSelectTagsComponent>;
@@ -278,6 +327,16 @@ describe('nz-select component', () => {
       flush();
       fixture.detectChanges();
       expect(testComponent.selectedValue.length).toBe(0);
+    }));
+    it('should custom display template work', fakeAsync(() => {
+      fixture.detectChanges();
+      selectComponent.nzSelectService.updateListOfSelectedValue(['jack'], true);
+      fixture.detectChanges();
+      tick(1000);
+      flush();
+      fixture.detectChanges();
+      const selection = select.nativeElement.querySelector('.ant-select-selection') as HTMLElement;
+      expect(selection.innerText).toContain('Label: Jack\nValue: jack');
     }));
   });
 
@@ -406,13 +465,20 @@ describe('nz-select component', () => {
       [nzDropdownMatchSelectWidth]="dropdownMatchSelectWidth"
       [nzDropdownStyle]="dropdownStyle"
       [nzDropdownClassName]="'test-class'"
+      [nzCustomTemplate]="custom"
       (nzOnSearch)="onSearch($event)"
       [nzPlaceHolder]="placeholder"
     >
       <nz-option nzValue="jack" nzLabel="Jack"></nz-option>
       <nz-option nzValue="lucy" nzLabel="Lucy"></nz-option>
       <nz-option nzValue="disabled" nzLabel="Disabled" nzDisabled></nz-option>
+      <nz-option nzValue="hidden" nzLabel="Hidden" nzHide></nz-option>
+      <nz-option nzValue="disabledAndHidden" nzLabel="DisabledAndHidden" nzDisabled nzHide></nz-option>
     </nz-select>
+    <ng-template #custom let-selected>
+      <div>Label: {{ selected.nzLabel }}</div>
+      <div>Value: {{ selected.nzValue }}</div>
+    </ng-template>
   `
 })
 export class NzTestSelectDefaultComponent {
@@ -442,11 +508,15 @@ export class NzTestSelectDefaultComponent {
 
 @Component({
   template: `
-    <nz-select [(ngModel)]="selectedValue" [nzAllowClear]="true" [nzMode]="'tags'">
+    <nz-select [(ngModel)]="selectedValue" [nzAllowClear]="true" [nzMode]="'tags'" [nzCustomTemplate]="custom">
       <nz-option nzValue="jack" nzLabel="Jack"></nz-option>
       <nz-option nzValue="lucy" nzLabel="Lucy"></nz-option>
       <nz-option nzValue="disabled" nzLabel="Disabled" nzDisabled nzCustomContent>Disabled</nz-option>
     </nz-select>
+    <ng-template #custom let-selected>
+      <div>Label: {{ selected.nzLabel }}</div>
+      <div>Value: {{ selected.nzValue }}</div>
+    </ng-template>
   `
 })
 export class NzTestSelectTagsComponent {

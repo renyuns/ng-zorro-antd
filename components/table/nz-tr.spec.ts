@@ -1,7 +1,6 @@
 import { Component, DebugElement } from '@angular/core';
-import { fakeAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { NzMeasureScrollbarService } from 'ng-zorro-antd/core';
 import { NzTableModule } from './nz-table.module';
 import { NzTrDirective } from './nz-tr.directive';
 
@@ -9,8 +8,7 @@ describe('nz-tr', () => {
   beforeEach(fakeAsync(() => {
     TestBed.configureTestingModule({
       imports: [NzTableModule],
-      declarations: [NzTrTestTableComponent, NzTrTestNzTableComponent],
-      providers: [NzMeasureScrollbarService]
+      declarations: [NzTrTestTableComponent, NzTrTestNzTableComponent]
     });
     TestBed.compileComponents();
   }));
@@ -63,7 +61,6 @@ describe('nz-tr', () => {
 });
 
 @Component({
-  selector: 'nz-tr-test-table',
   template: `
     <table>
       <tr></tr>
@@ -73,7 +70,6 @@ describe('nz-tr', () => {
 export class NzTrTestTableComponent {}
 
 @Component({
-  selector: 'nz-tr-test-nz-table',
   template: `
     <nz-table>
       <tr [nzExpand]="expand"></tr>

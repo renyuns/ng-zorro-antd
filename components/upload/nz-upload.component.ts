@@ -21,10 +21,10 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { of, Observable, Subscription } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-import { toBoolean, InputBoolean, InputNumber } from 'ng-zorro-antd/core';
+import { InputBoolean, InputNumber, toBoolean } from 'ng-zorro-antd/core';
 import { NzI18nService } from 'ng-zorro-antd/i18n';
 
 import {
@@ -46,12 +46,15 @@ import { NzUploadListComponent } from './nz-upload-list.component';
   templateUrl: './nz-upload.component.html',
   preserveWhitespaces: false,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.ant-upload-picture-card-wrapper]': 'nzListType === "picture-card"'
+  }
 })
 export class NzUploadComponent implements OnInit, OnChanges, OnDestroy {
   private i18n$: Subscription;
-  @ViewChild('uploadComp') uploadComp: NzUploadBtnComponent;
-  @ViewChild('listComp') listComp: NzUploadListComponent;
+  @ViewChild('uploadComp', { static: false }) uploadComp: NzUploadBtnComponent;
+  @ViewChild('listComp', { static: false }) listComp: NzUploadListComponent;
   // tslint:disable-next-line:no-any
   locale: any = {};
 
@@ -244,7 +247,9 @@ export class NzUploadComponent implements OnInit, OnChanges, OnDestroy {
 
   private dragState: string;
 
-  fileDrop(e: DragEvent): void {
+  // skip safari bug
+  // tslint:disable-next-line:no-any
+  fileDrop(e: any): void {
     if (e.type === this.dragState) {
       return;
     }
@@ -264,8 +269,7 @@ export class NzUploadComponent implements OnInit, OnChanges, OnDestroy {
   onRemove = (file: UploadFile): void => {
     this.uploadComp.abort(file);
     file.status = 'removed';
-    const fnRes =
-      typeof this.nzRemove === 'function' ? this.nzRemove(file) : this.nzRemove == null ? true : this.nzRemove;
+    const fnRes = typeof this.nzRemove === 'function' ? this.nzRemove(file) : this.nzRemove == null ? true : this.nzRemove;
     (fnRes instanceof Observable ? fnRes : of(fnRes)).pipe(filter((res: boolean) => res)).subscribe(() => {
       this.nzFileList = this.removeFileItem(file, this.nzFileList);
       this.nzChange.emit({

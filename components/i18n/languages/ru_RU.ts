@@ -17,12 +17,16 @@ export default {
   DatePicker,
   TimePicker,
   Calendar,
+  global: {
+    placeholder: 'Пожалуйста, выберите'
+  },
   Table: {
     filterTitle: 'Фильтр',
     filterConfirm: 'OK',
     filterReset: 'Сбросить',
     selectAll: 'Выбрать всё',
-    selectInvert: 'Инвертировать выбор'
+    selectInvert: 'Инвертировать выбор',
+    sortTitle: 'Сортировка'
   },
   Modal: {
     okText: 'OK',
@@ -34,6 +38,7 @@ export default {
     cancelText: 'Отмена'
   },
   Transfer: {
+    titles: ['', ''],
     searchPlaceholder: 'Поиск',
     itemUnit: 'элем.',
     itemsUnit: 'элем.'
@@ -46,5 +51,17 @@ export default {
   },
   Empty: {
     description: 'Нет данных'
+  },
+  Icon: {
+    icon: 'иконка'
+  },
+  Text: {
+    edit: 'редактировать',
+    copy: 'копировать',
+    copied: 'скопировано',
+    expand: 'раскрыть'
+  },
+  PageHeader: {
+    back: 'назад'
   }
 };

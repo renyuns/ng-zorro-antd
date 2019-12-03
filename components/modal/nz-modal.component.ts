@@ -18,6 +18,7 @@ import {
   Component,
   ComponentFactoryResolver,
   ComponentRef,
+  ContentChild,
   ElementRef,
   EventEmitter,
   Inject,
@@ -38,18 +39,21 @@ import {
 import { fromEvent, Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { getElementOffset, isPromise, InputBoolean } from 'ng-zorro-antd/core';
+import { getElementOffset, InputBoolean, isPromise, NzConfigService, warnDeprecation, WithConfig } from 'ng-zorro-antd/core';
 import { NzI18nService } from 'ng-zorro-antd/i18n';
 
-import { NzModalConfig, NZ_MODAL_CONFIG } from './nz-modal-config';
+import { NZ_MODAL_CONFIG, NzModalConfig } from './nz-modal-config';
 import { NzModalControlService } from './nz-modal-control.service';
+import { NzModalFooterDirective } from './nz-modal-footer.directive';
 import { NzModalRef } from './nz-modal-ref.class';
 import { ModalButtonOptions, ModalOptions, ModalType, OnClickCallback } from './nz-modal.type';
 
 export const MODAL_ANIMATE_DURATION = 200; // Duration when perform animations (ms)
+export const WRAP_CLASS_NAME = 'ant-modal-wrap';
 
 type AnimationState = 'enter' | 'leave' | null;
-export const WRAP_CLASS_NAME = 'ant-modal-wrap';
+
+const NZ_CONFIG_COMPONENT_NAME = 'modal';
 
 @Component({
   selector: 'nz-modal',
@@ -70,8 +74,11 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
   @Input() @InputBoolean() nzCancelLoading: boolean = false;
   @Input() @InputBoolean() nzKeyboard: boolean = true;
   @Input() @InputBoolean() nzNoAnimation = false;
-  @Input() @InputBoolean() nzMask: boolean;
-  @Input() @InputBoolean() nzMaskClosable: boolean;
+
+  // TODO(hsuanxyz): add default value once old API is deprecated.
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME) @InputBoolean() nzMask: boolean;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME) @InputBoolean() nzMaskClosable: boolean;
+
   @Input() nzContent: string | TemplateRef<{}> | Type<T>; // [STATIC] If not specified, will use <ng-content>
   @Input() nzComponentParams: T; // [STATIC] ONLY avaliable when nzContent is a component
   @Input() nzFooter: string | TemplateRef<{}> | Array<ModalButtonOptions<T>> | null; // [STATIC] Default Modal ONLY
@@ -82,11 +89,12 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
   @Input() nzClassName: string;
   @Input() nzStyle: object;
   @Input() nzTitle: string | TemplateRef<{}>;
+  @Input() nzCloseIcon: string | TemplateRef<void> = 'close';
   @Input() nzMaskStyle: object;
   @Input() nzBodyStyle: object;
   @Input() nzOkText: string | null;
   @Input() nzCancelText: string | null;
-  @Input() nzOkType = 'primary';
+  @Input() nzOkType: string = 'primary';
   @Input() nzIconType: string = 'question-circle'; // Confirm Modal ONLY
   @Input() nzModalType: ModalType = 'default';
 
@@ -97,9 +105,16 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
   @Output() readonly nzAfterClose = new EventEmitter<R>(); // Trigger when modal leave-animation over
   @Output() readonly nzVisibleChange = new EventEmitter<boolean>();
 
-  @ViewChild('modalContainer') modalContainer: ElementRef;
-  @ViewChild('bodyContainer', { read: ViewContainerRef }) bodyContainer: ViewContainerRef;
-  @ViewChild('autoFocusButtonOk', { read: ElementRef }) autoFocusButtonOk: ElementRef; // Only aim to focus the ok button that needs to be auto focused
+  @ViewChild('modalContainer', { static: true }) modalContainer: ElementRef;
+  @ViewChild('bodyContainer', { static: false, read: ViewContainerRef }) bodyContainer: ViewContainerRef;
+  @ViewChild('autoFocusButtonOk', { static: false, read: ElementRef }) autoFocusButtonOk: ElementRef; // Only aim to focus the ok button that needs to be auto focused
+
+  @ContentChild(NzModalFooterDirective, { static: false })
+  set modalFooter(value: NzModalFooterDirective) {
+    if (value && value.templateRef) {
+      this.setFooterWithTemplate(value.templateRef);
+    }
+  }
 
   get afterOpen(): Observable<void> {
     // Observable alias for nzAfterOpen
@@ -176,6 +191,7 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
   [key: string]: any; // tslint:disable-line:no-any
 
   constructor(
+    public nzConfigService: NzConfigService,
     private overlay: Overlay,
     private overlayKeyboardDispatcher: OverlayKeyboardDispatcher,
     private i18n: NzI18nService,
@@ -190,11 +206,15 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
   ) {
     super();
     this.scrollStrategy = this.overlay.scrollStrategies.block();
+
+    if (this.nzModalGlobalConfig) {
+      warnDeprecation('`NZ_MODAL_CONFIG` has been deprecated and will be removed in 9.0.0. Please use global config instead.');
+    }
   }
 
   ngOnInit(): void {
     this.i18n.localeChange.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
-      this.locale = this.i18n.getLocaleData('Modal') as { okText: string; cancelText: string };
+      this.locale = this.i18n.getLocaleData('Modal');
     });
 
     if (this.isComponent(this.nzContent)) {
@@ -264,6 +284,11 @@ export class NzModalComponent<T = any, R = any> extends NzModalRef<T, R>
       this.unsubscribe$.complete();
     });
     clearTimeout(this.timeoutId);
+  }
+
+  setFooterWithTemplate(templateRef: TemplateRef<{}>): void {
+    this.nzFooter = templateRef;
+    this.cdr.markForCheck();
   }
 
   setOverlayRef(overlayRef: OverlayRef): void {

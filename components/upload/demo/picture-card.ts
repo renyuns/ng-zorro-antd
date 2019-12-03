@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { UploadFile } from 'ng-zorro-antd';
+import { UploadFile } from 'ng-zorro-antd/upload';
 
 @Component({
   selector: 'nz-demo-upload-picture-card',
@@ -16,12 +16,7 @@ import { UploadFile } from 'ng-zorro-antd';
         <i nz-icon nzType="plus"></i>
         <div class="ant-upload-text">Upload</div>
       </nz-upload>
-      <nz-modal
-        [nzVisible]="previewVisible"
-        [nzContent]="modalContent"
-        [nzFooter]="null"
-        (nzOnCancel)="previewVisible = false"
-      >
+      <nz-modal [nzVisible]="previewVisible" [nzContent]="modalContent" [nzFooter]="null" (nzOnCancel)="previewVisible = false">
         <ng-template #modalContent>
           <img [src]="previewImage" [ngStyle]="{ width: '100%' }" />
         </ng-template>

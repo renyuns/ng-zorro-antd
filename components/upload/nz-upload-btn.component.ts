@@ -20,10 +20,10 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { of, Observable, Subscription } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { NzUpdateHostClassService } from 'ng-zorro-antd/core';
+import { NzUpdateHostClassService, warn } from 'ng-zorro-antd/core';
 
 import { UploadFile, UploadXHRArgs, ZipButtonOptions } from './interface';
 
@@ -44,7 +44,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
   private inited = false;
   private destroy = false;
 
-  @ViewChild('file') file: ElementRef;
+  @ViewChild('file', { static: false }) file: ElementRef;
 
   // #region fields
   @Input() classes: {} = {};
@@ -72,7 +72,9 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
 
   @HostListener('drop', ['$event'])
   @HostListener('dragover', ['$event'])
-  onFileDrop(e: DragEvent): void {
+  // skip safari bug
+  // tslint:disable-next-line:no-any
+  onFileDrop(e: any): void {
     if (this.options.disabled || e.type === 'dragover') {
       e.preventDefault();
       return;
@@ -137,9 +139,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
         const validType = type.trim();
         if (validType.charAt(0) === '.') {
           return (
-            fileName
-              .toLowerCase()
-              .indexOf(validType.toLowerCase(), fileName.toLowerCase().length - validType.toLowerCase().length) !== -1
+            fileName.toLowerCase().indexOf(validType.toLowerCase(), fileName.toLowerCase().length - validType.toLowerCase().length) !== -1
           );
         } else if (/\/\*$/.test(validType)) {
           // This is something like a image/* mime type
@@ -180,7 +180,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
         });
       },
       e => {
-        console.warn(`Unhandled upload filter error`, e);
+        warn(`Unhandled upload filter error`, e);
       }
     );
   }
@@ -202,7 +202,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
           }
         },
         e => {
-          console.warn(`Unhandled upload beforeUpload error`, e);
+          warn(`Unhandled upload beforeUpload error`, e);
         }
       );
     } else if (before !== false) {
@@ -246,7 +246,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
     };
     const req$ = (opt.customRequest || this.xhr).call(this, args);
     if (!(req$ instanceof Subscription)) {
-      console.warn(`Must return Subscription type in '[nzCustomRequest]' property`);
+      warn(`Must return Subscription type in '[nzCustomRequest]' property`);
     }
     this.reqs[uid] = req$;
     opt.onStart!(file);
@@ -275,7 +275,8 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
       headers: new HttpHeaders(args.headers)
     });
     return this.http.request(req).subscribe(
-      (event: HttpEvent<{}>) => {
+      // tslint:disable-next-line no-any
+      (event: HttpEvent<any>) => {
         if (event.type === HttpEventType.UploadProgress) {
           if (event.total! > 0) {
             // tslint:disable-next-line:no-any
@@ -324,11 +325,7 @@ export class NzUploadBtnComponent implements OnInit, OnChanges, OnDestroy {
 
   // #endregion
 
-  constructor(
-    @Optional() private http: HttpClient,
-    private el: ElementRef,
-    private updateHostClassService: NzUpdateHostClassService
-  ) {
+  constructor(@Optional() private http: HttpClient, private el: ElementRef, private updateHostClassService: NzUpdateHostClassService) {
     if (!http) {
       throw new Error(`Not found 'HttpClient', You can import 'HttpClientModule' in your root module.`);
     }

@@ -5,6 +5,7 @@
   [ngStyle]="style"
   tabindex="0"
   (click)="onClickInputBox()"
+  (keyup.enter)="onClickInputBox()"
 >
   <!-- Content of single picker -->
   <ng-container *ngIf="!isRange">
@@ -14,7 +15,6 @@
       [class.ant-input-lg]="size === 'large'"
       [class.ant-input-sm]="size === 'small'"
       [class.ant-input-disabled]="disabled"
-
       [disabled]="disabled"
       readonly
       value="{{ getReadableValue() }}"
@@ -34,7 +34,9 @@
     >
       <ng-container *ngTemplateOutlet="tplRangeInput; context: { partType: 'left' }"></ng-container>
       <span class="{{ prefixCls }}-range-picker-separator"> ~ </span>
-      <ng-container *ngTemplateOutlet="tplRangeInput; context: { partType: 'right' }"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="tplRangeInput; context: { partType: 'right' }"
+      ></ng-container>
       <ng-container *ngTemplateOutlet="tplRightRest"></ng-container>
     </span>
   </ng-container>
@@ -55,14 +57,14 @@
 <ng-template #tplRightRest>
   <i
     nz-icon
-    type="close-circle"
-    theme="fill"
+    nzType="close-circle"
+    nzTheme="fill"
     *ngIf="!disabled && !isEmptyValue(value) && allowClear"
     class="{{ prefixCls }}-picker-clear"
     (click)="onClickClear($event)"
   ></i>
   <span class="{{ prefixCls }}-picker-icon">
-    <i nz-icon type="calendar"></i>
+    <i nz-icon nzType="calendar"></i>
   </span>
 </ng-template>
 
@@ -81,12 +83,12 @@
   <div
     [nzNoAnimation]="noAnimation"
     [@slideMotion]="dropdownAnimation"
-    (@slideMotion.start)="animationStart()"
     (@slideMotion.done)="animationDone()"
     style="position: relative;"
     [style.left]="currentPositionX === 'start' ? '-2px' : '2px'"
     [style.top]="currentPositionY === 'top' ? '-2px' : '2px'"
-  > <!-- Compatible for overlay that not support offset dynamically and immediately -->
+  >
+    <!-- Compatible for overlay that not support offset dynamically and immediately -->
     <ng-content></ng-content>
   </div>
 </ng-template>

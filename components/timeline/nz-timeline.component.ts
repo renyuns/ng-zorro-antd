@@ -42,9 +42,9 @@ export type NzTimelineMode = 'left' | 'alternate' | 'right';
   templateUrl: './nz-timeline.component.html'
 })
 export class NzTimelineComponent implements AfterContentInit, OnChanges, OnDestroy {
-  @ViewChild('timeline') timeline: ElementRef<HTMLElement>;
+  @ViewChild('timeline', { static: false }) timeline: ElementRef<HTMLElement>;
   @ContentChildren(NzTimelineItemComponent) listOfTimeLine: QueryList<NzTimelineItemComponent>;
-  @ContentChild('pending') _pendingContent: TemplateRef<void>;
+  @ContentChild('pending', { static: false }) _pendingContent: TemplateRef<void>;
 
   @Input() nzMode: NzTimelineMode;
   @Input() nzPending: string | boolean | TemplateRef<void>;
@@ -65,11 +65,7 @@ export class NzTimelineComponent implements AfterContentInit, OnChanges, OnDestr
     if (modeChanges && (modeChanges.previousValue !== modeChanges.currentValue || modeChanges.isFirstChange())) {
       this.updateChildren();
     }
-    if (
-      reverseChanges &&
-      reverseChanges.previousValue !== reverseChanges.currentValue &&
-      !reverseChanges.isFirstChange()
-    ) {
+    if (reverseChanges && reverseChanges.previousValue !== reverseChanges.currentValue && !reverseChanges.isFirstChange()) {
       this.reverseChildTimelineDots();
     }
     if (pendingChanges) {

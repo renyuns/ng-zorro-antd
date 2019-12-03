@@ -8,32 +8,33 @@ title: Tree
 
 Almost anything can be represented in a tree structure. Examples include directories, organization hierarchies, biological classifications, countries, etc. The `Tree` component is a way of representing the hierarchical relationship between these things. You can also  expand, collapse, and select a treeNode within a `Tree`.
 
-## API
-
-### Import this Component Individually
+## Import this Component Individually
 
 You can get more detail [here](/docs/getting-started/en#import-a-component-individually).
 
 ```ts
-import { NzTreeModule } from 'ng-zorro-antd';
+import { NzTreeModule } from 'ng-zorro-antd/tree';
 ```
+
+## API
 
 ### nz-tree
 
-| Property | Description | Type | Default |
-| -------- | ----------- | ---- | ------- |
-| `[nzData]` | Tree data (Reference NzTreeNode) | `NzTreeNodeOptions[]｜NzTreeNode[]` | `[]` |
-| `[nzBlockNode]` | Whether treeNode fill remaining horizontal space | `boolean` | `false` |
+| Property | Description | Type | Default | Global Config |
+| -------- | ----------- | ---- | ------- | ------------- |
+| `[nzData]` | Tree data (Reference NzTreeNode) | `NzTreeNodeOptions[] \| NzTreeNode[]` | `[]` |
+| `[nzBlockNode]` | Whether treeNode fill remaining horizontal space | `boolean` | `false` | ✅ |
 | `[nzCheckable]` | Adds a Checkbox before the treeNodes| `boolean` | `false` |
-| `[nzShowExpand]` | Show a Expand Icon before the treeNodes | `boolean` | `true` |
-| `[nzShowLine]` | Shows a connecting line | `boolean` | `false` |
+| `[nzShowExpand]` | Show a Expand Icon before the treeNodes | `boolean` | `true` | |
+| `[nzShowLine]` | Shows a connecting line | `boolean` | `false` | |
 | `[nzExpandedIcon]` | Customize an expand icon | `TemplateRef<{ $implicit: NzTreeNode }>` | - |
-| `[nzShowIcon]` | Shows the icon before a TreeNode's title. There is no default style | `boolean` | `false` |
+| `[nzShowIcon]` | Shows the icon before a TreeNode's title. There is no default style | `boolean` | `false` | ✅ |
 | `[nzAsyncData]` | Load data asynchronously (should be used with NzTreeNode.addChildren(...)) | `boolean` | `false` |
 | `[nzDraggable]` | Specifies whether this Tree is draggable (IE > 8) | `boolean` | `false` |
 | `[nzMultiple]` | Allows selecting multiple treeNodes | `boolean` | `false` |
-| `[nzHideUnMatched]` | Hide unmatched nodes while searching | `boolean` | `false` |
+| `[nzHideUnMatched]` | Hide unmatched nodes while searching | `boolean` | `false` | ✅ |
 | `[nzCheckStrictly]` | Check treeNode precisely; parent treeNode and children treeNodes are not associated | `boolean` | `false` |
+| `[nzTreeTemplate]` | Custom Nodes | `TemplateRef<{ $implicit: NzTreeNode }>` | - |
 | `[nzExpandAll]` | Whether to expand all treeNodes | `boolean` | `false` |
 | `[nzExpandedKeys]` | Specify the keys of the default expanded treeNodes | `string[]` | `[]` |
 | `[nzCheckedKeys]` | Specifies the keys of the default checked treeNodes | `string[]` | `[]` |
@@ -88,7 +89,7 @@ import { NzTreeModule } from 'ng-zorro-antd';
 | --- | --- | --- | --- |
 | eventName | Event Name | enum: `click` `dblclick` `contextmenu` `check` `expand` `search` & `dragstart` `dragenter` `dragover` `dragleave` `drop` `dragend` | - |
 | node | The current operation node (such as the target node to drop while dragging) | `NzTreeNode` | `null` |
-| event | MouseEvent or DragEvent | `'MouseEvent'｜'DragEvent'` | `null` |
+| event | MouseEvent or DragEvent | `'MouseEvent' \| 'DragEvent'` | `null` |
 | dragNode? | Current drag node (existing if dragged) | `NzTreeNode` | `null` |
 | selectedKeys? | Selected nodes list | `NzTreeNode[]` | `[]` |
 | checkedKeys? | Checked nodes list | `NzTreeNode[]` | `[]` |

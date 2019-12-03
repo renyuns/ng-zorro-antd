@@ -12,6 +12,7 @@ NG-ZORRO
 
 An enterprise-class UI components based on Ant Design and Angular.
 
+[![CodeFactor](https://www.codefactor.io/repository/github/ng-zorro/ng-zorro-antd/badge?style=flat-square)](https://www.codefactor.io/repository/github/ng-zorro/ng-zorro-antd)
 [![Travis branch](https://img.shields.io/travis/NG-ZORRO/ng-zorro-antd/master.svg?style=flat-square)](https://travis-ci.org/NG-ZORRO/ng-zorro-antd)
 [![Codecov](https://img.shields.io/codecov/c/github/NG-ZORRO/ng-zorro-antd.svg?style=flat-square)](https://codecov.io/gh/NG-ZORRO/ng-zorro-antd)
 [![GitHub Release Date](https://img.shields.io/github/release-date/NG-ZORRO/ng-zorro-antd.svg?style=flat-square)](https://github.com/NG-ZORRO/ng-zorro-antd/releases)
@@ -20,6 +21,8 @@ An enterprise-class UI components based on Ant Design and Angular.
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/LICENSE)
 [![Gitter](https://img.shields.io/gitter/room/ng-zorro/ng-zorro-antd.svg?style=flat-square)](https://gitter.im/ng-zorro/ng-zorro-antd)
 [![extension-for-VSCode](https://img.shields.io/badge/extension%20for-VSCode-blue.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=cipchk.ng-zorro-vscode)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![Twitter](https://img.shields.io/badge/Twitter-NG--ZORRO-blue.svg?style=flat-square&logo=twitter)](https://twitter.com/NG_ZORRO)
 
 </div>
 
@@ -34,10 +37,13 @@ English | [简体中文](README-zh_CN.md)
 - A set of high-quality Angular components out of the box.
 - Written in TypeScript with predictable static types.
 - The whole package of development and design resources and tools.
+- Support OnPush mode, high performance.
+- Support Customize theme.
+- Support import Component individually.
 
 ## 🖥 Environment Support
 
-* Angular `^7.0.0`
+* Angular `^8.0.0`
 * Server-side Rendering
 * Modern browsers and Internet Explorer 11+ (with [polyfills](https://angular.io/guide/browser-support))
 * [Electron](http://electron.atom.io/)
@@ -148,10 +154,22 @@ As always, we encourage experienced users to help those who are not familiar wit
 
 - [Alibaba](http://www.alibaba.com/)
 - [Aliyun](http://www.aliyun.com/)
-- [Apache Flink](https://flink.apache.org/)
 - [ThoughtWorks](https://www.thoughtworks.com/)
+- [Ververica](https://www.ververica.com/)
+- [Apache Flink](https://flink.apache.org/)
+- [Apache Zeppelin](http://zeppelin.apache.org/)
+- [Apache Metron](https://metron.apache.org/)
+- [Process Automation Group](http://pag.company/)
+- [AISINOCO](http://www.aisino.com/)
+- [GongDao](https://www.gongdao.com/)
+- [UC Express](http://www.uce.cn/)
+- [Qingflow](https://qingflow.com/)
+- [DataGrand](http://datagrand.com/)
+- [ScentBird](https://www.scentbird.com/)
+- [Southern Institute of Technology](https://www.sit.ac.nz/)
+- [Hapify (Dynamic boilerplates tool)](https://hub.hapify.io/)
 
-> If your company or product uses NG-ZORRO, let us know [here](https://github.com/NG-ZORRO/ng-zorro-antd/issues/1142)!
+> We list some users here, if your company or product uses NG-ZORRO, let us know [here](https://github.com/NG-ZORRO/ng-zorro-antd/issues/1142)!
 
 ## ☀️ License
 

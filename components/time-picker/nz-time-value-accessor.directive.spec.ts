@@ -1,7 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import zh from '@angular/common/locales/zh';
 import { Component, DebugElement, ViewChild } from '@angular/core';
-import { async, fakeAsync, flush, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
@@ -65,12 +65,12 @@ describe('input-time', () => {
 });
 
 @Component({
-  selector: 'nz-test-time-input',
   template: `
     <input [(ngModel)]="value" [nzTime]="'HH:mm:ss'" />
   `
 })
 export class NzTestTimeInputComponent {
-  @ViewChild(NzTimeValueAccessorDirective) nzTimeValueAccessorDirective: NzTimeValueAccessorDirective;
+  @ViewChild(NzTimeValueAccessorDirective, { static: false })
+  nzTimeValueAccessorDirective: NzTimeValueAccessorDirective;
   value = new Date(0, 0, 0, 0, 0, 0);
 }

@@ -14,13 +14,17 @@ import {
   EventEmitter,
   Input,
   OnChanges,
-  OnInit,
   Output,
   SimpleChanges,
   TemplateRef,
   ViewEncapsulation
 } from '@angular/core';
-import { NzPageHeaderFooterDirective } from './nz-page-header-cells';
+
+import { Location } from '@angular/common';
+import { NzConfigService, WithConfig } from 'ng-zorro-antd/core';
+import { NzPageHeaderBreadcrumbDirective, NzPageHeaderFooterDirective } from './nz-page-header-cells';
+
+const NZ_CONFIG_COMPONENT_NAME = 'pageHeader';
 
 @Component({
   selector: 'nz-page-header',
@@ -31,23 +35,37 @@ import { NzPageHeaderFooterDirective } from './nz-page-header-cells';
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'ant-page-header',
-    '[class.ant-page-header-has-footer]': 'nzPageHeaderFooter'
-  }
+    '[class.has-footer]': 'nzPageHeaderFooter',
+    '[class.ant-page-header-ghost]': 'nzGhost',
+    '[class.has-breadcrumb]': 'nzPageHeaderBreadcrumb'
+  },
+  styles: [
+    `
+      .ant-page-header-back-button {
+        border: 0px;
+        background: transparent;
+        padding: 0px;
+        line-height: inherit;
+        display: inline-block;
+      }
+    `
+  ]
 })
-export class NzPageHeaderComponent implements OnInit, OnChanges {
+export class NzPageHeaderComponent implements OnChanges {
   isTemplateRefBackIcon = false;
   isStringBackIcon = false;
 
   @Input() nzBackIcon: string | TemplateRef<void> | null = null;
   @Input() nzTitle: string | TemplateRef<void>;
   @Input() nzSubtitle: string | TemplateRef<void>;
+  @Input() @WithConfig(NZ_CONFIG_COMPONENT_NAME, true) nzGhost: boolean;
   @Output() readonly nzBack = new EventEmitter<void>();
 
-  @ContentChild(NzPageHeaderFooterDirective) nzPageHeaderFooter: ElementRef<NzPageHeaderFooterDirective>;
+  @ContentChild(NzPageHeaderFooterDirective, { static: false }) nzPageHeaderFooter: ElementRef<NzPageHeaderFooterDirective>;
 
-  constructor() {}
+  @ContentChild(NzPageHeaderBreadcrumbDirective, { static: false }) nzPageHeaderBreadcrumb: ElementRef<NzPageHeaderBreadcrumbDirective>;
 
-  ngOnInit(): void {}
+  constructor(private location: Location, public nzConfigService: NzConfigService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.hasOwnProperty('nzBackIcon')) {
@@ -57,6 +75,10 @@ export class NzPageHeaderComponent implements OnInit, OnChanges {
   }
 
   onBack(): void {
-    this.nzBack.emit();
+    if (this.nzBack.observers.length) {
+      this.nzBack.emit();
+    } else {
+      this.location.back();
+    }
   }
 }
